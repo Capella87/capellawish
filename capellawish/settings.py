@@ -29,13 +29,13 @@ def get_secrets(filepath: Path) -> dict:
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRETS = get_secrets(os.environ.get('SECRETS_FILE', BASE_DIR / 'secrets.json'))
+SECRETS = get_secrets(os.getenv('SECRETS_FILE', BASE_DIR / 'secrets.json'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = SECRETS.get('SECRET_KEY', os.environ.get('SECRET_KEY', None))
+SECRET_KEY = SECRETS.get('SECRET_KEY', os.getenv('SECRET_KEY', None))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,13 +84,12 @@ LOGGING = {
             'when': 'midnight',
             'interval': 30,
             'backupCount': 10,
-            'level': 'INFO',
             'formatter': 'fileformatter',
         }
     },
     'root': {
         'handlers': ['console'],
-        'level': 'WARNING',
+        'level': 'INFO',
     },
     'loggers': {
         'django': {
@@ -165,11 +164,11 @@ WSGI_APPLICATION = 'capellawish.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'HOST': SECRETS.get('DB_HOST', os.environ.get('POSTGRES_HOST', 'localhost')),
-        'PORT': SECRETS.get('DB_PORT', os.environ.get('POSTGRES_PORT', 5432)),
-        'NAME': SECRETS.get('DB_NAME', os.environ.get('POSTGRES_DB', 'capellawish')),
-        'USER': SECRETS.get('DB_USER', os.environ.get('POSTGRES_USER', 'capellawish')),
-        'PASSWORD': SECRETS.get('DB_PASSWORD', os.environ.get('POSTGRES_PASSWORD', '')),
+        'HOST': SECRETS.get('DB_HOST', os.getenv('POSTGRES_HOST', 'localhost')),
+        'PORT': SECRETS.get('DB_PORT', os.getenv('POSTGRES_PORT', 5432)),
+        'NAME': SECRETS.get('DB_NAME', os.getenv('POSTGRES_DB', 'capellawish')),
+        'USER': SECRETS.get('DB_USER', os.getenv('POSTGRES_USER', 'capellawish')),
+        'PASSWORD': SECRETS.get('DB_PASSWORD', os.getenv('POSTGRES_PASSWORD', '')),
     }
 }
 
@@ -228,8 +227,8 @@ SIMPLE_JWT = {
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'VERIFYING_KEY': '',
-    'AUDIENCE': SECRETS.get('SIMPLE_JWT_AUDIENCE', os.environ.get('SIMPLE_JWT_AUDIENCE', None)),
-    'ISSUER': SECRETS.get('SIMPLE_JWT_ISSUER', os.environ.get('SIMPLE_JWT_ISSUER', None)),
+    'AUDIENCE': SECRETS.get('SIMPLE_JWT_AUDIENCE', os.getenv('SIMPLE_JWT_AUDIENCE', None)),
+    'ISSUER': SECRETS.get('SIMPLE_JWT_ISSUER', os.getenv('SIMPLE_JWT_ISSUER', None)),
     'JSON_ENCODER': None,
     'JWK_URL': None,
     'LEEWAY': 0,
