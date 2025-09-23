@@ -1,7 +1,7 @@
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 import rest_framework.status
 from capellawish.serializers import SampleSerializer
 
@@ -38,3 +38,15 @@ class MainView(APIView):
 
             return Response(data=message,
                             status=rest_framework.status.HTTP_400_BAD_REQUEST)
+
+
+class AuthenticatedMainView(APIView):
+    permission_classes =  [IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        data = {
+            'message': f"Hello, {request.user}! You're authenticated."
+        }
+
+        return Response(data=data,
+                        status=rest_framework.status.HTTP_200_OK)

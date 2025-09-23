@@ -24,7 +24,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView, TokenVerifyView
 )
 
-from capellawish.views import MainView
+from capellawish.views import MainView, AuthenticatedMainView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='api/', permanent=False)),
@@ -34,6 +34,8 @@ urlpatterns = [
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('api/', MainView.as_view(), name='main'),
+    
+    path('api/authenticated/', AuthenticatedMainView.as_view(), name='authenticated'),
 
     # OpenAPI with drf-spectacular
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
