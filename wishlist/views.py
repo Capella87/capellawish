@@ -2,7 +2,7 @@ from typing import Any, override
 
 from django.shortcuts import render
 from django.template.context_processors import request
-from rest_framework.generics import GenericAPIView, ListCreateAPIView
+from rest_framework.generics import GenericAPIView, ListCreateAPIView, get_object_or_404
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
@@ -64,3 +64,31 @@ class WishListView(APIView, WishItemListPagination):
 
         instance = serializer.save(user=request.user)
         return Response(data=WishListItemDetailSerializer(instance).data, status=status.HTTP_201_CREATED)
+
+
+class WishListItemDetailView(APIView):
+    '''
+    View to manage a specific wishlist item.
+    '''
+    ## TODO: Allow others when user sets it to public
+    permission_classes = [IsAuthenticated]
+    serializer_class = WishListItemDetailSerializer
+
+    def get(self, request: Request, id: str, *args, **kwargs) -> Response:
+        requested_item = get_object_or_404(WishItem.objects.only(*WishListItemDetailSerializer.Meta.fields),
+                                           id=id,
+                                           deleted_at__isnull=True,
+                                           user=request.user)
+        if not requested_item:
+            return Response(data={'error': 'Item not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        serialized = WishListItemDetailSerializer(instance=requested_item)
+        return Response(data=serialized.data, status=status.HTTP_200_OK)
+
+
+    def patch(self, request: Request, pk: str, *args, **kwargs) -> Response:
+        pass
+
+    def delete(self, request: Request, pk: str, *args, **kwargs) -> Response:
+        pass
