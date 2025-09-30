@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 
 from wishlist.models import WishItem
 from wishlist.pagination import WishItemListPagination
-from wishlist.serializers import WishListItemSerializer, WishListItemCreateSerializer
+from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer
 
 
 # Create your views here.
@@ -38,7 +38,7 @@ class WishListView(APIView, WishItemListPagination):
         objs = (WishItem.objects
                 .filter(deleted_at__isnull=True)
                 .filter(user=self.request.user)
-                .only(*WishListItemSerializer.Meta.fields)
+                .only(*WishListItemDetailSerializer.Meta.fields)
                 .order_by('-updated_at')) ## TODO: Add ordering options with query params
         paginated = self.paginate_queryset(queryset=objs, request=request, view=self)
         serialized = WishListItemSerializer(instance=paginated, many=True)
@@ -54,8 +54,13 @@ class WishListView(APIView, WishItemListPagination):
         :return:
         '''
 
-        serializer = WishListItemCreateSerializer(data=request.data)
+        serializer = WishListItemDetailSerializer(data=request.data)
+
+        ## TODO: Filter duplicate titles for the same user.
         if not serializer.is_valid(raise_exception=True):
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        result = serializer.save(user=request.user)
-        return Response(data=result, status=status.HTTP_201_CREATED)
+
+
+
+        instance = serializer.save(user=request.user)
+        return Response(data=WishListItemDetailSerializer(instance).data, status=status.HTTP_201_CREATED)

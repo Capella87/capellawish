@@ -7,13 +7,7 @@ from wishlist.models import WishItem, ItemSource
 class SourceItemSerializer(Serializer):
     class Meta:
         model = ItemSource
-        fields = ['source_url', 'source_name', 'description']
-
-class WishListItemCreateSerializer(ModelSerializer):
-    sources = SourceItemSerializer(many=True)
-    class Meta:
-        model = WishItem
-        fields = ['title', 'description', 'is_public', 'is_starred', 'description', 'sources']
+        fields = ['id', 'source_url', 'source_name', 'description']
 
 class WishListItemSerializer(ModelSerializer):
     class Meta:
