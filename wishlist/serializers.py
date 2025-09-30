@@ -53,4 +53,10 @@ class WishListItemDetailSerializer(ModelSerializer):
 
     class Meta:
         model = WishItem
-        fields = ['id', 'title', 'description', 'is_public', 'is_completed', 'is_starred', 'sources']
+        fields = ['id', 'title', 'description', 'is_public', 'is_completed',
+                  'is_starred', 'created_at', 'updated_at', 'sources']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'created_at': {'read_only': True},
+            'updated_at': {'read_only': True},
+        }
