@@ -81,7 +81,7 @@ class WishListItemDetailView(APIView):
                                            deleted_at__isnull=True,
                                            user=request.user)
         if not requested_item:
-            return Response(data={'error': 'Item not found'},
+            return Response(data={'status': 'error', 'message': 'Item not found'},
                             status=status.HTTP_404_NOT_FOUND)
 
         serialized = WishListItemDetailSerializer(instance=requested_item)
