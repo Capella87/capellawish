@@ -15,7 +15,7 @@ class WishListItemSerializer(ModelSerializer):
         fields = ['id', 'title', 'is_completed', 'is_starred', 'updated_at']
 
 class WishListItemDetailSerializer(ModelSerializer):
-    sources = SourceItemSerializer(many=True)
+    sources = SourceItemSerializer(many=True, required=False)
 
     @override
     def create(self, validated_data: dict) -> WishItem:
