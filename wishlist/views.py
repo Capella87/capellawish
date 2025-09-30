@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from wishlist.models import WishItem
 from wishlist.pagination import WishItemListPagination
@@ -90,5 +91,16 @@ class WishListItemDetailView(APIView):
     def patch(self, request: Request, pk: str, *args, **kwargs) -> Response:
         pass
 
-    def delete(self, request: Request, pk: str, *args, **kwargs) -> Response:
-        pass
+    def delete(self, request: Request, id: str, *args, **kwargs) -> Response:
+        target = get_object_or_404(WishItem.objects.only('id', 'deleted_at'),
+                                   id=id,
+                                   deleted_at__isnull=True,
+                                   user=request.user)
+        if not target:
+            return Response(data={'status': 'error', 'message': 'Item not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        target.deleted_at = timezone.now()
+        target.save(update_fields=['deleted_at'])
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
