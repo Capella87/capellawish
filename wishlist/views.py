@@ -38,7 +38,7 @@ class WishListView(APIView, WishItemListPagination):
         objs = (WishItem.objects
                 .filter(deleted_at__isnull=True)
                 .filter(user=self.request.user)
-                .only(WishListItemSerializer.Meta.fields)
+                .only(*WishListItemSerializer.Meta.fields)
                 .order_by('-updated_at')) ## TODO: Add ordering options with query params
         paginated = self.paginate_queryset(queryset=objs, request=request, view=self)
         serialized = WishListItemSerializer(instance=paginated, many=True)
