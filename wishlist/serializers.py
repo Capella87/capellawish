@@ -4,7 +4,7 @@ from rest_framework.serializers import ModelSerializer, Serializer
 from wishlist.models import WishItem, ItemSource
 
 
-class SourceItemSerializer(Serializer):
+class SourceItemSerializer(ModelSerializer):
     class Meta:
         model = ItemSource
         fields = ['id', 'source_url', 'source_name', 'description']
@@ -53,4 +53,4 @@ class WishListItemDetailSerializer(ModelSerializer):
 
     class Meta:
         model = WishItem
-        fields = ['title', 'description', 'is_public', 'is_completed', 'is_starred', 'sources']
+        fields = ['id', 'title', 'description', 'is_public', 'is_completed', 'is_starred', 'sources']
