@@ -3,7 +3,9 @@ from typing import override
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
+from django.utils.translation import gettext_lazy as _
 
 class WishListUserManager(BaseUserManager):
     use_in_migrations = True
@@ -30,20 +32,34 @@ class WishListUserManager(BaseUserManager):
 
 # Create your models here.
 
-class WishListUser(AbstractBaseUser, PermissionsMixin):
+class WishListUser(AbstractUser):
+
+    username_validator = UnicodeUsernameValidator()
+
     id = models.AutoField(primary_key=True)
-    email = models.EmailField(unique=True, blank=False, editable=True)
-    username = models.CharField(unique=True, blank=False, editable=True)
-    first_name = models.CharField(max_length=150, blank=True, editable=True)
-    last_name = models.CharField(max_length=150, blank=True, editable=True)
+    email = models.EmailField(_('email address'), unique=True, blank=False, editable=True)
+    is_verified_user = models.BooleanField(_('verified user by email or phone verification'), default=False)
+    username = models.CharField(
+        _('username'),
+        max_length=200,
+        unique=True,
+        editable=True,
+        help_text=_(
+            'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'
+        ),
+        validators=[username_validator],
+        error_messages={
+            "unique": _('A user with that username already exists.'),
+        },
+    )
     alias_name = models.CharField(max_length=150, blank=True, editable=True, unique=False)
-    surname = models.CharField(max_length=150, blank=True, editable=True)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
-    is_superuser = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    middle_name = models.CharField(_('middle name'), max_length=150, blank=True, editable=True)
+    is_superuser = models.BooleanField(_('superuser status'), default=False)
+    date_updated = models.DateTimeField(_('date updated'), auto_now=True)
+
+    ## TODO: Passkey and 2FA
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
+    USERNAME_VALIDATOR = UnicodeUsernameValidator()
     objects = WishListUserManager()
