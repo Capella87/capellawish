@@ -9,11 +9,21 @@ class SourceItemSerializer(Serializer):
         model = ItemSource
         fields = ['source_url', 'source_name', 'description']
 
+class WishListItemCreateSerializer(ModelSerializer):
+    sources = SourceItemSerializer(many=True)
+    class Meta:
+        model = WishItem
+        fields = ['title', 'description', 'is_public', 'is_starred', 'description', 'sources']
 
-class WishlistSerializer(ModelSerializer):
+class WishListItemSerializer(ModelSerializer):
+    class Meta:
+        model = WishItem
+        fields = ['id', 'title', 'is_completed', 'is_starred', 'updated_at']
+
+class WishListItemDetailSerializer(ModelSerializer):
     sources = SourceItemSerializer(many=True)
 
-    @override(ModelSerializer.create)
+    @override
     def create(self, validated_data: dict) -> WishItem:
         """
         Create and return a new `WishItem` instance, given the validated data.
@@ -27,7 +37,7 @@ class WishlistSerializer(ModelSerializer):
             wish_item.sources.add(item)
         return wish_item
 
-    @override(ModelSerializer.update)
+    @override
     def update(self, instance, validated_data: dict) -> WishItem:
         """
         Update and return an existing `WishItem` instance, given the validated data.

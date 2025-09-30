@@ -34,7 +34,8 @@ urlpatterns = [
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('api/', MainView.as_view(), name='main'),
-    
+    path('api/wishlist/', include('wishlist.urls'), name='wishlist'),
+
     path('api/authenticated/', AuthenticatedMainView.as_view(), name='authenticated'),
 
     # OpenAPI with drf-spectacular
