@@ -10,6 +10,7 @@ class MainView(APIView):
     """ This class is a main and sample view for the API."""
 
     permission_classes = [AllowAny]
+    serializer_class = SampleSerializer
     def get(self, request: Request) -> Response:
         """
         Returns a greeting message and a help message for POST requests.
