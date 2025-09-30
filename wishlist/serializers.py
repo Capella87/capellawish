@@ -24,11 +24,11 @@ class WishListItemDetailSerializer(ModelSerializer):
         :param validated_data: The validated data for creating the WishItem.
         :return: The created WishItem instance.
         """
-        sources = validated_data.pop('sources', [])
+        sources_data = validated_data.pop('sources', [])
         wish_item = WishItem.objects.create(**validated_data)
-        for data in sources:
-            item, _ = ItemSource.objects.get_or_create(**data)
-            wish_item.sources.add(item)
+        if sources_data:
+            item_sources = [ItemSource(wish_item=wish_item, **sd) for sd in sources_data]
+            ItemSource.objects.bulk_create(item_sources)
         return wish_item
 
     @override
