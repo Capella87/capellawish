@@ -57,10 +57,11 @@ LOGGING = {
         },
     },
     'formatters': {
-        'django.server': {
+        'django': {
             '()': 'django.utils.log.ServerFormatter',
-            'format': '[{server_time}] {message}',
+            'format': '[{levelname} {asctime}] {message}',
             'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
         },
         'fileformatter': {
             'format': '{levelname} {asctime} {module} {message}',
@@ -69,14 +70,8 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
-            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-        },
-        'django.server': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'django.server',
+            'formatter': 'django'
         },
         'file': {
             'class': 'logging.handlers.TimedRotatingFileHandler',
@@ -95,10 +90,11 @@ LOGGING = {
         'django': {
             'handlers': ['console', 'file'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
         },
-        'django.server': {
-            'handlers': ['django.server', 'file'],
-            'level': 'INFO',
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': False,
         },
     }
