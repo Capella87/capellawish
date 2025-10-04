@@ -257,6 +257,8 @@ SIMPLE_JWT = {
     # 'SLIDING_TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer',
 }
 
+CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://127.0.0.1']
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
