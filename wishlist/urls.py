@@ -4,5 +4,5 @@ from wishlist.views import WishListView, WishListItemDetailView
 
 urlpatterns = [
     path('', WishListView.as_view(), name='wishlist'),
-    path('item/<str:id>/', WishListItemDetailView.as_view(), name='wishlist-item-detail'),
+    path('item/<str:id>', WishListItemDetailView.as_view(), name='wishlist-item-detail'),
 ]
