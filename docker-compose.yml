@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   db:
     image: postgres:17
@@ -12,20 +11,36 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
   web:
     build: .
-    command: sh -c "uv run manage.py collectstatic --noinput && uv run manage.py migrate && hypercorn capellawish.asgi:application -b 0.0.0.0:8000 --reload"
+    command: sh -c 'uv run manage.py collectstatic --noinput && uv run manage.py migrate && hypercorn capellawish.asgi:application --config ./hypercornconfig.toml'
     volumes:
-      - .:/app
+      - .:/app # Uncomment for local development
       - webstatic:/app/static
       - weblog:/app/logs
-    ports:
-      - "8000:8000"
+    expose:
+      - 8000
     env_file:
       - .env
     depends_on:
       - db
+    restart: always
+  nginx:
+    image: macbre/nginx-http3:latest
+    ports:
+      - '8000:80/tcp'
+      - '8000:80/udp'
+      - '443:443/tcp'
+      - '443:443/udp'
+    # configuration
+    user: '0:0' # run as root to bind low ports
+    volumes:
+      - ./nginxdev.conf:/etc/nginx/nginx.conf:ro
+      - webstatic:/static:ro
+      - weblog:/var/log/nginx
+    depends_on:
+      - web
 volumes:
   postgres_data:
   webstatic:
