@@ -1,10 +1,12 @@
 from typing import override
 
-from rest_framework.serializers import ModelSerializer, Serializer
+from rest_framework.serializers import ModelSerializer, Serializer, UUIDField
 from wishlist.models import WishItem, ItemSource
-
+import uuid
 
 class SourceItemSerializer(ModelSerializer):
+    id = UUIDField(default=uuid.uuid4, read_only=False)
+
     class Meta:
         model = ItemSource
         fields = ['id', 'source_url', 'source_name', 'description']
@@ -32,7 +34,7 @@ class WishListItemDetailSerializer(ModelSerializer):
         return wish_item
 
     @override
-    def update(self, instance, validated_data: dict) -> WishItem:
+    def update(self, instance: WishItem, validated_data: dict) -> WishItem:
         """
         Update and return an existing `WishItem` instance, given the validated data.
         :param instance: The existing WishItem instance to be updated.
@@ -40,15 +42,25 @@ class WishListItemDetailSerializer(ModelSerializer):
         :return: The updated WishItem instance.
         """
         sources = validated_data.pop('sources', [])
+        current_sources = dict((i.id, i) for i in instance.sources.all())
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+
+        for src in sources:
+            if 'id' in src:
+                item = current_sources.pop(src['id'])
+                for property in src.keys():
+                    setattr(item, property, src[property])
+                item.save() # TODO: Bulk
+            else:
+                ItemSource.objects.create(wish_item=instance, **src) # TODO: Bulk
+
+        if len(current_sources) > 0:
+            for src in current_sources.values():
+                src.delete() # TODO: Bulk
+
         instance.save()
-        if len(sources) > 0:
-            instance.sources.clear()
-            for source_data in sources:
-                item, _ = ItemSource.objects.get_or_create(**source_data)
-                instance.sources.add(item)
         return instance
 
     class Meta:

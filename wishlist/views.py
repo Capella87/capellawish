@@ -88,8 +88,20 @@ class WishListItemDetailView(APIView):
         return Response(data=serialized.data, status=status.HTTP_200_OK)
 
 
-    def patch(self, request: Request, pk: str, *args, **kwargs) -> Response:
-        pass
+    def put(self, request: Request, id: str, *args, **kwargs) -> Response:
+        # Updated items, deleted items, and added items should be handled here.
+        target = get_object_or_404(WishItem.objects.all(),
+                                   id=id,
+                                   deleted_at__isnull=True,
+                                   user__id=request.user.id)
+
+        # Merge the existing data with the new data
+        serializer = WishListItemDetailSerializer(instance=target, data=request.data, partial=True)
+        if not serializer.is_valid(raise_exception=True):
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        instance = serializer.save()
+        return Response(data=WishListItemDetailSerializer(instance).data, status=status.HTTP_200_OK)
+
 
     def delete(self, request: Request, id: str, *args, **kwargs) -> Response:
         target = get_object_or_404(WishItem.objects.only('id', 'deleted_at'),
