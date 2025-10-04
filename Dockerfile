@@ -10,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_TOOL_BIN_DIR=/usr/local/bin
 
 # install uv
-COPY --from=ghcr.io/astral-sh/uv:0.8.20 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.8.22-python3.13-trixie-slim /uv /uvx /bin/
 
 COPY pyproject.toml uv.lock /_lock/
 
