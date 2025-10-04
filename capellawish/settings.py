@@ -66,6 +66,7 @@ LOGGING = {
         'fileformatter': {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
         },
     },
     'handlers': {
