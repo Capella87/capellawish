@@ -31,14 +31,15 @@ services:
     ports:
       - '8000:80/tcp'
       - '8000:80/udp'
-      - '443:443/tcp'
-      - '443:443/udp'
+      - '443:443/tcp'  # Expose HTTPS
+      - '443:443/udp'  # Expose HTTPS over UDP for HTTP/3
     # configuration
     user: '0:0' # run as root to bind low ports
     volumes:
       - ./nginxdev.conf:/etc/nginx/nginx.conf:ro
       - webstatic:/static:ro
       - weblog:/var/log/nginx
+      - ./certs:/etc/nginx/certs:ro  # Mount SSL certs
     depends_on:
       - web
 volumes:

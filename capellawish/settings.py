@@ -257,8 +257,19 @@ SIMPLE_JWT = {
     # 'SLIDING_TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer',
 }
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://127.0.0.1']
+# CSRF Configuration
+CSRF_COOKIE_HTTPONLY = True
 
+CSRF_COOKIE_SECURE = True
+
+SESSION_COOKIE_SECURE = True
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'https://localhost'
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
