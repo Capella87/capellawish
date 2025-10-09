@@ -54,7 +54,7 @@ class WishListUser(AbstractUser):
         unique=True,
         editable=True,
         help_text=_(
-            'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'
+            'Required. 200 characters or fewer. Letters, digits and @/./+/-/_ only.'
         ),
         validators=[username_validator],
         error_messages={
