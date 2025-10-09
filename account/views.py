@@ -25,3 +25,15 @@ class UserAccountSignUpView(APIView):
         serializer.save()
         return Response(data={'message': 'Successfully registered'},
                         status=status.HTTP_201_CREATED)
+
+
+class UserAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request: Request):
+        user: WishListUser = request.user
+
+        user.is_active = False
+        user.save()
+
+        return Response(data={'message': 'Account successfully deleted. Goodbye!'}, status=status.HTTP_200_OK)

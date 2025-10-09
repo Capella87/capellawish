@@ -2,6 +2,7 @@ from typing import Any, override
 
 from django.shortcuts import render
 from django.template.context_processors import request
+from drf_spectacular.utils import extend_schema
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, get_object_or_404
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.pagination import LimitOffsetPagination
@@ -46,6 +47,11 @@ class WishListView(APIView, WishItemListPagination):
 
         return self.get_paginated_response(data=serialized.data)
 
+    @extend_schema(
+        request=WishListItemDetailSerializer,
+        responses={201: WishListItemDetailSerializer},
+        description="Create a new wishlist item for the authenticated user.",
+    )
     def post(self, request: Request, *args, **kwargs) -> Response:
         '''
         Create a new wishlist item for the authenticated user
