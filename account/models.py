@@ -4,25 +4,34 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.contrib.auth import password_validation
+from django.contrib.auth.models import User
 
 from django.utils.translation import gettext_lazy as _
 
 class WishListUserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, email: str, username: str, password: str = None, **extra_fields) -> AbstractBaseUser:
+    def create_user(self, email: str, username: str, password: str | None = None, **extra_fields) -> AbstractUser:
         if not email:
             raise ValueError('Users must have an email address')
         if not username:
             raise ValueError('Users must have a valid username')
-        email = self.normalize_email(email)
+        extra_fields['is_staff'] = False
+        extra_fields['is_superuser'] = False
 
-        new_user = WishListUser(email=email, username=username, **extra_fields)
+        email = self.normalize_email(email)
+        username = self.model.normalize_username(username)
+
+        new_user = self.model(email=email, username=username, **extra_fields)
+
+        password_validation.validate_password(password, new_user)
         new_user.set_password(password)
+
         new_user.save(using=self._db)
         return new_user
 
-    def create_superuser(self, email: str, username: str, password: str = None, **extra_fields) -> AbstractBaseUser:
+    def create_superuser(self, email: str, username: str, password: str = None, **extra_fields) -> AbstractUser:
         created_user = self.create_user(email, username, password, **extra_fields)
         created_user.is_superuser = created_user.is_staff = True
         created_user.save(using=self._db)
