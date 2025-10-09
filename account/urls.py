@@ -4,11 +4,14 @@ from django.urls import path
 from account import views
 from django.urls import path, include
 from rest_framework import urls
+from rest_framework import views
 
 from account.views import UserAccountSignUpView, UserAccountView
 
 app_name = 'account'
 urlpatterns = [
+    path('login/', LoginView.as_view(template_name='account/login.html'), name='login'),
+    path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
     path('account/', UserAccountView.as_view(), name='user'),
     path('account/signup', UserAccountSignUpView.as_view(), name='SignUp'),
 ]
