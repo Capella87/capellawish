@@ -42,6 +42,11 @@ class WishListView(APIView, WishItemListPagination):
                 .filter(user=self.request.user)
                 .only(*WishListItemDetailSerializer.Meta.fields)
                 .order_by('-updated_at')) ## TODO: Add ordering options with query params
+
+        starred = request.query_params.get('starred', None)
+        if starred:
+            objs = objs.filter(is_starred=True)
+
         paginated = self.paginate_queryset(queryset=objs, request=request, view=self)
         serialized = WishListItemSerializer(instance=paginated, many=True)
 
