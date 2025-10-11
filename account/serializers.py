@@ -49,6 +49,13 @@ class UserSignUpSerializer(serializers.ModelSerializer):
                   'alias_name', 'middle_name', 'password', 'password2']
 
 
+class UserAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WishListUser
+        fields = ['email', 'username', 'first_name', 'last_name', 'alias_name', 'middle_name']
+        read_only_fields = ['email', 'username'] # Restrict changing email and username for now.
+
+
 class UserPasswordChangeSerializer(serializers.ModelSerializer):
     old_password = serializers.CharField(max_length=200, required=True, allow_blank=False, write_only=True)
     password = serializers.CharField(max_length=200, required=True, allow_blank=False, write_only=True)

@@ -10,9 +10,7 @@ from account.views import UserAccountSignUpView, UserAccountView, UserPasswordVi
 
 app_name = 'account'
 urlpatterns = [
-    path('login/', LoginView.as_view(template_name='account/login.html'), name='login'),
-    path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
-    path('account/', UserAccountView.as_view(), name='user'),
-    path('account/password/', UserPasswordView.as_view(), name='password_change'),
-    path('account/signup', UserAccountSignUpView.as_view(), name='SignUp'),
+    path('', UserAccountView.as_view(), name='user'),
+    path('password/', UserPasswordView.as_view(), name='password_change'),
+    path('signup/', UserAccountSignUpView.as_view(), name='SignUp'),
 ]

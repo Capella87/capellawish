@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from account.models import WishListUser
-from account.serializers import UserSignUpSerializer, UserPasswordChangeSerializer
+from account.serializers import UserSignUpSerializer, UserPasswordChangeSerializer, UserAccountSerializer
 
 
 # Create your views here.
@@ -29,8 +29,18 @@ class UserAccountSignUpView(APIView):
 
 class UserAccountView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = UserAccountSerializer
 
-    def delete(self, request: Request):
+    def get(self, request: Request) -> Response:
+        user = request.user
+
+        serializer = self.serializer_class(user, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request: Request) -> Response:
         user: WishListUser = request.user
 
         user.is_active = False
