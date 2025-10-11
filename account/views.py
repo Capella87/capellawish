@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from account.models import WishListUser
-from account.serializers import UserSignUpSerializer
+from account.serializers import UserSignUpSerializer, UserPasswordChangeSerializer
 
 
 # Create your views here.
@@ -37,3 +37,19 @@ class UserAccountView(APIView):
         user.save()
 
         return Response(data={'message': 'Account successfully deleted. Goodbye!'}, status=status.HTTP_200_OK)
+
+
+class UserPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserPasswordChangeSerializer
+
+    def patch(self, request: Request) -> Response:
+        user = request.user
+        serializer = self.serializer_class(data=request.data, context=request)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.update(user, request.data)
+
+        return Response(data={'message': 'Successfully changed password'}, status=status.HTTP_200_OK)

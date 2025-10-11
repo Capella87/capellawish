@@ -1,7 +1,9 @@
 from typing import override
 
+from django.contrib.auth import password_validation
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
+from rest_framework.fields import CurrentUserDefault
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -45,3 +47,41 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         model = WishListUser
         fields = ['email', 'username', 'first_name', 'last_name',
                   'alias_name', 'middle_name', 'password', 'password2']
+
+
+class UserPasswordChangeSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(max_length=200, required=True, allow_blank=False, write_only=True)
+    password = serializers.CharField(max_length=200, required=True, allow_blank=False, write_only=True)
+    password2 = serializers.CharField(max_length=200, required=True, allow_blank=False, write_only=True)
+
+    @override
+    def validate(self, attrs: dict) -> dict:
+        if not attrs.get('password') == attrs.get('password2'):
+            raise serializers.ValidationError('The new passwords do not match.')
+
+        if attrs.get('old_password') == attrs.get('password'):
+            raise serializers.ValidationError('The new password must be different from the old password.')
+        return attrs
+
+    def validate_old_password(self, value: str) -> str:
+        user = self.context.user
+
+        if not user.check_password(value):
+            raise serializers.ValidationError('The old password is incorrect.')
+        return value
+
+    @override
+    def update(self, instance: AbstractUser, validated_data: dict) -> AbstractUser:
+        new_password = validated_data.pop('password')
+        password_validation.validate_password(new_password, instance)
+        instance.set_password(new_password)
+        instance.save()
+
+        password_validation.password_changed(instance, new_password)
+
+        return instance
+
+
+    class Meta:
+        model = WishListUser
+        fields = ['old_password', 'password', 'password2']
