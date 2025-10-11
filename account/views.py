@@ -40,6 +40,16 @@ class UserAccountView(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def patch(self, request: Request) -> Response:
+        user = request.user
+
+        serializer = self.serializer_class(user, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     def delete(self, request: Request) -> Response:
         user: WishListUser = request.user
 

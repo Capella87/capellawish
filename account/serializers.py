@@ -50,6 +50,17 @@ class UserSignUpSerializer(serializers.ModelSerializer):
 
 
 class UserAccountSerializer(serializers.ModelSerializer):
+
+    def check_readonly_data(self, data: dict) -> None:
+        for field in self.Meta.read_only_fields:
+            if field in data:
+                raise serializers.ValidationError(f'The field \'{field}\' is read-only and cannot be modified.')
+
+    @override
+    def validate(self, attrs: dict) -> dict:
+        check_readonly_data(self.initial_data)
+        return attrs
+
     class Meta:
         model = WishListUser
         fields = ['email', 'username', 'first_name', 'last_name', 'alias_name', 'middle_name']
