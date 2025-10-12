@@ -1,5 +1,6 @@
 from typing import override
 
+from django.db import transaction
 from rest_framework.serializers import ModelSerializer, Serializer, UUIDField
 from wishlist.models import WishItem, ItemSource
 import uuid
@@ -47,18 +48,23 @@ class WishListItemDetailSerializer(ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
+        new_items = []
+        updated_items = []
         for src in sources:
             if 'id' in src:
                 item = current_sources.pop(src['id'])
                 for property in src.keys():
                     setattr(item, property, src[property])
-                item.save() # TODO: Bulk
+                updated_items.append(item)
             else:
-                ItemSource.objects.create(wish_item=instance, **src) # TODO: Bulk
+                new_items.append(ItemSource(wish_item=instance, **src))
 
-        if len(current_sources) > 0:
-            for src in current_sources.values():
-                src.delete() # TODO: Bulk
+        with transaction.atomic():
+            ItemSource.objects.bulk_create(new_items)
+            ItemSource.objects.bulk_update(updated_items, ['source_url', 'source_name', 'description'])
+            if len(current_sources) > 0:
+                for src in current_sources.values():
+                    src.delete()
 
         instance.save()
         return instance
