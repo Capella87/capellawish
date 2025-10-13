@@ -1,5 +1,6 @@
 from typing import Any, override
 
+from django.db import IntegrityError
 from django.shortcuts import render
 from django.template.context_processors import request
 from drf_spectacular.utils import extend_schema
@@ -110,7 +111,12 @@ class WishListItemDetailView(APIView):
         serializer = WishListItemDetailSerializer(instance=target, data=request.data, partial=True)
         if not serializer.is_valid(raise_exception=True):
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        instance = serializer.save()
+        try:
+            instance = serializer.save()
+        except IntegrityError as e:
+            return Response(data={'status': 'error', 'message': 'Duplicate links are not allowed.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         return Response(data=WishListItemDetailSerializer(instance).data, status=status.HTTP_200_OK)
 
 
