@@ -40,3 +40,11 @@ class ItemSource(models.Model):
     source_name = models.CharField(max_length=300, blank=True)
     wish_item = models.ForeignKey(WishItem, related_name='sources', on_delete=models.CASCADE)
     description = models.TextField(blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['wish_item', 'source_url'])
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=['source_url', 'wish_item'], name='unique_source_per_item')
+        ]
