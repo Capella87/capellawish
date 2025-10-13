@@ -1,5 +1,7 @@
 import uuid
 from typing import override
+
+from django.core import validators
 from django.db import models
 from account.models import WishListUser
 
@@ -25,6 +27,8 @@ class WishItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(auto_now=False, null=True)
 
+    # custom_fields = models.JSONField(default=dict, blank=True)
+
 
     # Logical deletion field
     deleted_at = models.DateTimeField(auto_now=False, null=True)
@@ -33,10 +37,12 @@ class WishItem(models.Model):
     user = models.ForeignKey('account.WishListUser', related_name='wish_item_user', on_delete=models.CASCADE)
 
 
+
 class ItemSource(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    source_url = models.URLField(blank=True)
+    # Note: Due to the base of URLField is CharField, using TextField with validator to allow more length than 200
+    source_url = models.TextField(blank=False, validators=[validators.URLValidator()])
     source_name = models.CharField(max_length=300, blank=True)
     wish_item = models.ForeignKey(WishItem, related_name='sources', on_delete=models.CASCADE)
     description = models.TextField(blank=True)
