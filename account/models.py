@@ -66,6 +66,12 @@ class WishListUser(AbstractUser):
     is_superuser = models.BooleanField(_('superuser status'), default=False)
     date_updated = models.DateTimeField(_('date updated'), auto_now=True)
 
+    profile_image = models.ImageField(_('profile image'),
+                                      upload_to='media/users/profile_images/',
+                                      blank=True, null=True)
+    bio = models.TextField(_('bio'), blank=True, editable=True)
+    # birthday = models.DateField(_('date of birth'), blank=True, editable=True) # Optional
+
     ## TODO: Passkey and 2FA
 
     USERNAME_FIELD = 'username'
