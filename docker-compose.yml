@@ -19,6 +19,7 @@ services:
       # - .:/app # Uncomment for local development
       - webstatic:/app/static
       - weblog:/app/logs
+      - webmedia:/app/media
     expose:
       - 8000
     env_file:
@@ -38,6 +39,7 @@ services:
     volumes:
       - ./nginxdev.conf:/etc/nginx/nginx.conf:ro
       - webstatic:/static:ro
+      - webmedia:/media:ro
       - weblog:/var/log/nginx
       - ./certs:/etc/nginx/certs:ro  # Mount SSL certs
     depends_on:
@@ -46,3 +48,4 @@ volumes:
   postgres_data:
   webstatic:
   weblog:
+  webmedia:
