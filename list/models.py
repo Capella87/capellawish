@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import UniqueConstraint
+import uuid
 
 from account.models import WishListUser
 
@@ -8,10 +9,10 @@ from account.models import WishListUser
 
 class ListModel(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
-    uuid = models.UUIDField(unique=True, editable=False)
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, auto_created=True)
     title = models.CharField(max_length=200, blank=False)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to="media/lists",
+    image = models.ImageField(upload_to="lists",
                               blank=True,
                               null=True)
 
