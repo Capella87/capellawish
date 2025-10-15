@@ -27,6 +27,8 @@ class ListModel(models.Model):
 
     is_deleted = models.BooleanField(default=False)
 
+    items = models.ManyToManyField('wishlist.WishItem', blank=True)
+
     def __str__(self):
         return self.title
 
