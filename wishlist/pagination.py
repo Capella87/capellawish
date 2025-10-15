@@ -6,3 +6,7 @@ class WishItemListPagination(LimitOffsetPagination):
     limit_query_param = 'limit'
     offset_query_param = 'offset'
     max_limit = None
+
+
+class WishListPagination(WishItemListPagination):
+    default_limit = 20
