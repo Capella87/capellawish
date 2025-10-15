@@ -37,10 +37,11 @@ class ListModel(models.Model):
         indexes = [
             models.Index(fields=['is_deleted']),
             models.Index(fields=['user']),
+            models.Index(fields=['uuid'])
         ]
         ordering = [
             'user',
         ]
         constraints = [
-            UniqueConstraint(fields=['user', 'title'])
+            UniqueConstraint(fields=['user', 'title'], name='unique_list_title')
         ]
