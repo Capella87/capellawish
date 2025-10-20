@@ -20,11 +20,10 @@ class ListSerializer(serializers.ModelSerializer):
 class ListDetailSerializer(serializers.ModelSerializer):
     # TODO: Pagination for nested items:
     item_count = serializers.SerializerMethodField()
-    items = WishListItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = ListModel
-        fields = ['uuid', 'title', 'description', 'image', 'updated_at', 'item_count', 'items',
+        fields = ['uuid', 'title', 'description', 'image', 'updated_at', 'item_count',
                   'created_at', 'allow_completion_by_other', 'allow_anonymous_completion', 'is_shared']
 
     def get_item_count(self, obj):

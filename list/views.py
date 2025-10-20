@@ -1,4 +1,5 @@
-from django.shortcuts import render, get_object_or_404
+from typing import override
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import MultiPartParser, JSONParser
@@ -9,7 +10,8 @@ from rest_framework.views import APIView
 
 from list.models import ListModel
 from list.serializers import ListSerializer, ListDetailSerializer
-from wishlist.pagination import WishListPagination
+from wishlist.pagination import WishListPagination, WishItemListPagination
+from wishlist.serializers import WishListItemSerializer
 
 
 # Create your views here.
@@ -59,7 +61,6 @@ class ListDetailView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request, uuid: str) -> Response:
-        # TODO: Paginate items per 30 with customized pagination logic
         target = get_object_or_404(ListModel.objects,
                                    uuid=uuid,
                                    is_deleted=False,
@@ -78,3 +79,28 @@ class ListDetailView(GenericAPIView):
         target.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# Note: This view must be APIView because GenericAPIView requires queryset configuration which is not needed for actions
+class ListItemView(APIView):
+    # TODO: Follow user preferences for permissions
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, uuid: str) -> Response:
+        target = get_object_or_404(ListModel.objects.only('uuid', 'items', 'is_deleted'),
+                                   uuid=uuid,
+                                   is_deleted=False,
+                                   user_id=request.user.pk)
+        queryset = (
+            target.items.filter(user_id=request.user.pk, deleted_at__isnull=True)
+            .order_by('-created_at')
+            .only(*WishListItemSerializer.Meta.fields)
+        )
+
+        if request.query_params.get('starred', None):
+            queryset = queryset.filter(is_starred=True)
+        paginator = WishItemListPagination()
+        paginated = paginator.paginate_queryset(queryset=queryset, request=request, view=self)
+        serialized = WishListItemSerializer(instance=paginated, many=True)
+
+        return paginator.get_paginated_response(data=serialized.data)
