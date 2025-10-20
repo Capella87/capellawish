@@ -57,9 +57,17 @@ class ListDetailView(GenericAPIView):
                                    uuid=uuid,
                                    is_deleted=False,
                                    user=request.user)
-        if not target:
-            return Response(data={'status': 'error', 'message': 'list not found'},
-                            status=status.HTTP_404_NOT_FOUND)
         serialized = self.serializer_class(instance=target)
 
         return Response(data=serialized.data, status=status.HTTP_200_OK)
+
+    def delete(self, request: Request, uuid: str) -> Response:
+        target = get_object_or_404(ListModel.objects.only('uuid', 'is_deleted', 'items'),
+                                   uuid=uuid,
+                                   is_deleted=False,
+                                   user=request.user)
+        target.items.clear()
+        target.is_deleted = True
+        target.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
