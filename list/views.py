@@ -20,12 +20,19 @@ class ListView(GenericAPIView):
     pagination_class = WishListPagination
     parser_classes = (MultiPartParser, JSONParser)
 
+    @override
+    def get_queryset(self):
+        return (
+            ListModel.objects
+            .filter(user_id=self.request.user.pk)
+            .only(*['uuid', 'title', 'description', 'image', 'updated_at'])
+        )
+
     # Search for all lists created by user
     def get(self, request: Request) -> Response:
-        targets = (ListModel.objects
-                   .filter(user_id=request.user.id))
+        qs = self.get_queryset()
 
-        paginated = self.paginate_queryset(queryset=targets)
+        paginated = self.paginate_queryset(queryset=qs)
         serialized = self.serializer_class(instance=paginated, many=True)
 
         return self.get_paginated_response(data=serialized.data)
