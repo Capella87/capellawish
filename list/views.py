@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import MultiPartParser, JSONParser
@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from list.models import ListModel
-from list.serializers import ListSerializer
+from list.serializers import ListSerializer, ListDetailSerializer
 from wishlist.pagination import WishListPagination
 
 
@@ -45,5 +45,21 @@ class PublicListView(APIView):
     pass
 
 
-class ListDetailView(APIView):
-    pass
+class ListDetailView(GenericAPIView):
+    serializer_class = ListDetailSerializer
+
+    # TODO: Open for anonymouse users when user set the settings
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, uuid: str) -> Response:
+        # TODO: Paginate items per 30 with customized pagination logic
+        target = get_object_or_404(ListModel.objects,
+                                   uuid=uuid,
+                                   is_deleted=False,
+                                   user=request.user)
+        if not target:
+            return Response(data={'status': 'error', 'message': 'list not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+        serialized = self.serializer_class(instance=target)
+
+        return Response(data=serialized.data, status=status.HTTP_200_OK)
