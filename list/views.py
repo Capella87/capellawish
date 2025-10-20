@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -13,9 +14,10 @@ from wishlist.pagination import WishListPagination
 
 # Create your views here.
 
-class ListView(APIView, WishListPagination):
+class ListView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ListSerializer
+    pagination_class = WishListPagination
     parser_classes = (MultiPartParser, JSONParser)
 
     # Search for all lists created by user
@@ -23,7 +25,7 @@ class ListView(APIView, WishListPagination):
         targets = (ListModel.objects
                    .filter(user_id=request.user.id))
 
-        paginated = self.paginate_queryset(queryset=targets, request=request, view=self)
+        paginated = self.paginate_queryset(queryset=targets)
         serialized = self.serializer_class(instance=paginated, many=True)
 
         return self.get_paginated_response(data=serialized.data)
