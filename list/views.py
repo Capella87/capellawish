@@ -1,4 +1,6 @@
 from typing import override
+
+from django.db import transaction, IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
@@ -9,7 +11,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from list.models import ListModel
-from list.serializers import ListSerializer, ListDetailSerializer
+from list.serializers import ListSerializer, ListDetailSerializer, ListItemSerializer
+from wishlist.models import WishItem
 from wishlist.pagination import WishListPagination, WishItemListPagination
 from wishlist.serializers import WishListItemSerializer
 
@@ -104,3 +107,26 @@ class ListItemView(APIView):
         serialized = WishListItemSerializer(instance=paginated, many=True)
 
         return paginator.get_paginated_response(data=serialized.data)
+
+    def post(self, request: Request, uuid: str) -> Response:
+        target = get_object_or_404(ListModel.objects.only('uuid', 'items', 'is_deleted'),
+                                   uuid=uuid,
+                                   is_deleted=False,
+                                   user_id=request.user.pk)
+
+        serializer = ListItemSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Concurrency
+        try:
+            with transaction.atomic():
+                retrieved = WishItem.objects.select_for_update().in_bulk(id_list=serializer.validated_data.get('items', []),
+                                                                     field_name='id')
+                target.items.add(*retrieved.values())
+                target.save()
+
+        # TODO: Exception handling
+        except IntegrityError:
+            transaction.rollback()
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)

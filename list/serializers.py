@@ -28,3 +28,11 @@ class ListDetailSerializer(serializers.ModelSerializer):
 
     def get_item_count(self, obj):
         return obj.items.count()
+
+
+class ListItemSerializer(serializers.Serializer):
+    items = serializers.ListField(child=serializers.UUIDField(),
+                                  allow_empty=True)
+
+    class Meta:
+        fields = ['items']
