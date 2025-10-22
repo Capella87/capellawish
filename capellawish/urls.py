@@ -36,6 +36,7 @@ urlpatterns = [
     path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('api/', MainView.as_view(), name='main'),
     path('api/wishlist/', include('wishlist.urls'), name='wishlist'),
+    path('api/list/', include('list.urls'), name='list'),
 
     path('api/authenticated/', AuthenticatedMainView.as_view(), name='authenticated'),
 

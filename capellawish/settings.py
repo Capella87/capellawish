@@ -126,6 +126,7 @@ INSTALLED_APPS = [
     # Apps
     'account',
     'wishlist',
+    'list'
 ]
 
 MIDDLEWARE = [
