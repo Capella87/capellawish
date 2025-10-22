@@ -41,7 +41,7 @@ class WishListView(APIView, WishItemListPagination):
         objs = (WishItem.objects
                 .filter(deleted_at__isnull=True)
                 .filter(user=self.request.user)
-                .only(*WishListItemDetailSerializer.Meta.fields)
+                .only(*WishListItemSerializer.Meta.fields)
                 .order_by('-updated_at')) ## TODO: Add ordering options with query params
 
         starred = request.query_params.get('starred', None)
@@ -73,8 +73,6 @@ class WishListView(APIView, WishItemListPagination):
         if not serializer.is_valid(raise_exception=True):
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
         instance = serializer.save(user=request.user)
         return Response(data=WishListItemDetailSerializer(instance).data, status=status.HTTP_201_CREATED)
 
@@ -99,7 +97,6 @@ class WishListItemDetailView(APIView):
         serialized = WishListItemDetailSerializer(instance=requested_item)
         return Response(data=serialized.data, status=status.HTTP_200_OK)
 
-
     def put(self, request: Request, id: str, *args, **kwargs) -> Response:
         # Updated items, deleted items, and added items should be handled here.
         target = get_object_or_404(WishItem.objects.all(),
@@ -118,7 +115,6 @@ class WishListItemDetailView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         return Response(data=WishListItemDetailSerializer(instance).data, status=status.HTTP_200_OK)
-
 
     def delete(self, request: Request, id: str, *args, **kwargs) -> Response:
         target = get_object_or_404(WishItem.objects.only('id', 'deleted_at'),
