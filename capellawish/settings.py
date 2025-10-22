@@ -270,19 +270,36 @@ SIMPLE_JWT = {
     # 'SLIDING_TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer',
 }
 
-# CSRF Configuration
+# CSRF Configurations
+
 CSRF_COOKIE_HTTPONLY = True
 
 CSRF_COOKIE_SECURE = True
 
-SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_AGE = 314496000 # 1 year
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_COOKIE_DOMAIN = None
+
+CSRF_COOKIE_NAME = 'csrftoken'
+
+CSRF_COOKIE_PATH = '/'
+
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+CSRF_USE_SESSIONS = False
+
+CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+
+CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'https://localhost:8081'
 ]
+
+SESSION_COOKIE_SECURE = True
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -329,3 +346,15 @@ SILKY_PERMISSIONS = lambda user: user.is_superuser
 LOGIN_URL = '/api/auth/login/'
 
 LOGIN_REDIRECT_URL = '/api/'
+
+# WWW Prepend
+
+PREPEND_WWW = False
+
+# Cache Settings
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
