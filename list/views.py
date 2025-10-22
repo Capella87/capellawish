@@ -1,3 +1,4 @@
+import logging
 from typing import override
 
 from django.db import transaction, IntegrityError
@@ -72,6 +73,18 @@ class ListDetailView(GenericAPIView):
 
         return Response(data=serialized.data, status=status.HTTP_200_OK)
 
+    def patch(self, request: Request, uuid: str) -> Response:
+        target = get_object_or_404(ListModel.objects,
+                                   uuid=uuid,
+                                   is_deleted=False,
+                                   user=request.user)
+        serialized = self.serializer_class(instance=target, data=request.data, partial=True)
+        if not serialized.is_valid():
+            return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+        serialized.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     def delete(self, request: Request, uuid: str) -> Response:
         target = get_object_or_404(ListModel.objects.only('uuid', 'is_deleted', 'items'),
                                    uuid=uuid,
@@ -145,6 +158,8 @@ class ListItemView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         # Concurrency
+        # TODO: Filter already deleted items
+        # TODO: When the item is deleted, how to set a relation....
         try:
             with transaction.atomic():
                 retrieved = target.items.select_for_update().in_bulk(id_list=serializer.validated_data.get('items', []),
