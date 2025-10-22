@@ -125,8 +125,35 @@ class ListItemView(APIView):
                                                                      field_name='id')
                 target.items.add(*retrieved.values())
                 target.save()
-
         # TODO: Exception handling
         except IntegrityError:
             transaction.rollback()
+            logging.exception('Integrity Error occurred')
+            return Response(data={'status': 'error', 'message': 'An internal error occurred.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self, request: Request, uuid: str) -> Response:
+        target = get_object_or_404(ListModel.objects.only('uuid', 'items', 'is_deleted'),
+                                        uuid=uuid,
+                                        is_deleted=False,
+                                        user_id=request.user.pk)
+
+        serializer = ListItemSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Concurrency
+        try:
+            with transaction.atomic():
+                retrieved = target.items.select_for_update().in_bulk(id_list=serializer.validated_data.get('items', []),
+                                                                     field_name='id')
+                target.items.remove(*retrieved.values())
+        except IntegrityError:
+            transaction.rollback()
+            logging.exception('Integrity Error occurred')
+            return Response(data={'status': 'error', 'message': 'An internal error occurred.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
