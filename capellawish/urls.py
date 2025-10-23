@@ -14,11 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import RedirectView
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django.conf import settings
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView, TokenVerifyView
@@ -35,7 +37,7 @@ urlpatterns = [
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('api/', MainView.as_view(), name='main'),
-    path('api/wishlist/', include('wishlist.urls'), name='wishlist'),
+    path('api/item/', include('wishlist.urls'), name='wishlist'),
     path('api/list/', include('list.urls'), name='list'),
 
     path('api/authenticated/', AuthenticatedMainView.as_view(), name='authenticated'),
@@ -48,3 +50,5 @@ urlpatterns = [
     path('silk/', include('silk.urls', namespace='silk')),
 
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
