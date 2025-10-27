@@ -4,6 +4,7 @@ from typing import override
 from django.db import transaction, IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
@@ -19,6 +20,8 @@ from wishlist.serializers import WishListItemSerializer
 
 
 # Create your views here.
+
+logger = logging.getLogger(__name__)
 
 class ListView(GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -138,12 +141,10 @@ class ListItemView(APIView):
                                                                      field_name='id')
                 target.items.add(*retrieved.values())
                 target.save()
-        # TODO: Exception handling
         except IntegrityError:
             transaction.rollback()
-            logging.exception('Integrity Error occurred')
-            return Response(data={'status': 'error', 'message': 'An internal error occurred.'},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            logger.exception('Integrity Error occurred')
+            raise APIException(code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
@@ -168,7 +169,6 @@ class ListItemView(APIView):
         except IntegrityError:
             transaction.rollback()
             logging.exception('Integrity Error occurred')
-            return Response(data={'status': 'error', 'message': 'An internal error occurred.'},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            raise APIException(code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
