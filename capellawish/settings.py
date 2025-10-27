@@ -174,6 +174,9 @@ DATABASES = {
         'NAME': SECRETS.get('DB_NAME', os.getenv('POSTGRES_DB', 'capellawish')),
         'USER': SECRETS.get('DB_USER', os.getenv('POSTGRES_USER', 'capellawish')),
         'PASSWORD': SECRETS.get('DB_PASSWORD', os.getenv('POSTGRES_PASSWORD', '')),
+        'TEST': {
+            'NAME': SECRETS.get('DB_TEST_NAME', os.getenv('DB_TEST_NAME', 'test_capellawish')),
+        }
     }
 }
 
