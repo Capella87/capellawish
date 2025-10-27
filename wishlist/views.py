@@ -4,6 +4,7 @@ from django.db import IntegrityError
 from django.shortcuts import render
 from django.template.context_processors import request
 from drf_spectacular.utils import extend_schema
+from rest_framework.exceptions import APIException
 from rest_framework.generics import GenericAPIView, ListCreateAPIView, get_object_or_404
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.pagination import LimitOffsetPagination
@@ -111,8 +112,7 @@ class WishListItemDetailView(APIView):
         try:
             instance = serializer.save()
         except IntegrityError as e:
-            return Response(data={'status': 'error', 'message': 'Duplicate links are not allowed.'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            raise APIException('Internal server error')
 
         return Response(data=WishListItemDetailSerializer(instance).data, status=status.HTTP_200_OK)
 

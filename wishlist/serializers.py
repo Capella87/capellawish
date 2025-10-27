@@ -1,9 +1,13 @@
+from collections import Counter
 from typing import override
 
 from django.db import transaction
-from rest_framework.serializers import ModelSerializer, Serializer, UUIDField
+from rest_framework.exceptions import ValidationError
+from rest_framework.serializers import ModelSerializer, UUIDField
+
 from wishlist.models import WishItem, ItemSource
 import uuid
+
 
 class SourceItemSerializer(ModelSerializer):
     id = UUIDField(default=uuid.uuid4, read_only=False)
@@ -12,13 +16,39 @@ class SourceItemSerializer(ModelSerializer):
         model = ItemSource
         fields = ['id', 'source_url', 'source_name', 'description']
 
+
 class WishListItemSerializer(ModelSerializer):
     class Meta:
         model = WishItem
         fields = ['id', 'title', 'is_completed', 'is_starred', 'updated_at']
 
+
 class WishListItemDetailSerializer(ModelSerializer):
     sources = SourceItemSerializer(many=True, required=False)
+    # Validator for uniqueness
+    # Source: https://www.django-rest-framework.org/api-guide/validators/
+    # Source 2: https://stackoverflow.com/questions/70774389/django-rest-framwork-how-to-prevent-1062-duplicate-entry
+    # title = CharField(max_length=400, validators=[UniqueValidator(queryset=WishItem.objects.all())])
+
+    def validate_sources(self, attrs):
+        sources = attrs
+        urls = [s.get('source_url') for s in sources if 'source_url' in s]
+        payload_dup = [u for u, c in Counter(urls).items() if c > 1]
+        if payload_dup:
+            raise ValidationError('Duplicate URLs are not allowed.')
+
+        # Check duplicates in database
+        if getattr(self, 'instance', None):
+            queryset = (ItemSource.objects
+                        .only('id', 'source_url', 'wish_item')
+                        .filter(wish_item=self.context['instance'], source_url__in=urls))
+            existing_sources = [s['id'] for s in sources if 'id' in s]
+            if existing_sources:
+                queryset = queryset.exclude(id__in=existing_sources).distinct('source_url')
+            if queryset.exists():
+                rt = queryset.values_list('source_url', flat=True)
+                raise ValidationError('Duplicate URLs are not allowed.')
+        return attrs
 
     @override
     def create(self, validated_data: dict) -> WishItem:
@@ -61,13 +91,22 @@ class WishListItemDetailSerializer(ModelSerializer):
 
         with transaction.atomic():
             ItemSource.objects.bulk_create(new_items)
-            ItemSource.objects.bulk_update(updated_items, ['source_url', 'source_name', 'description'])
+            ItemSource.objects.select_for_update().bulk_update(updated_items,
+                                                               ['source_url', 'source_name', 'description'])
             if len(current_sources) > 0:
                 for src in current_sources.values():
                     src.delete()
 
         instance.save()
         return instance
+
+    # Source: https://stackoverflow.com/questions/30560470/context-in-nested-serializers-django-rest-framework/58505856#58505856
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['sources'].context.update(self.context)
+
+        if getattr(self, 'instance', None):
+            self.fields['sources'].context['instance'] = self.instance
 
     class Meta:
         model = WishItem
