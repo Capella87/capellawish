@@ -1,3 +1,4 @@
+import logging
 from typing import Any, override
 
 from django.db import IntegrityError
@@ -21,6 +22,8 @@ from wishlist.serializers import WishListItemSerializer, WishListItemDetailSeria
 
 
 # Create your views here.
+
+logger = logging.getLogger(__name__)
 
 class WishListView(APIView, WishItemListPagination):
     """
@@ -109,6 +112,7 @@ class WishListItemDetailView(APIView):
         try:
             instance = serializer.save()
         except IntegrityError as e:
+            logger.exception('Integrity Error occurred')
             raise APIException('Internal server error')
 
         return Response(data=WishListItemDetailSerializer(instance).data, status=status.HTTP_200_OK)
