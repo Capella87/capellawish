@@ -2,33 +2,51 @@ from collections import Counter
 from typing import override
 
 from django.db import transaction
+from django.db.models import ImageField
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import ModelSerializer, UUIDField
+from django.utils import timezone
 
 from wishlist.models import WishItem, ItemSource
 import uuid
 
 
 class SourceItemSerializer(ModelSerializer):
-    id = UUIDField(default=uuid.uuid4, read_only=False)
+    uuid = UUIDField(default=uuid.uuid4, read_only=False) # Will be a trouble if I set read_only to True?
 
     class Meta:
         model = ItemSource
-        fields = ['id', 'source_url', 'source_name', 'description']
+        fields = ['uuid', 'source_url', 'source_name', 'description']
 
 
 class WishListItemSerializer(ModelSerializer):
+    uuid = UUIDField(default=uuid.uuid4)
+
     class Meta:
         model = WishItem
-        fields = ['id', 'title', 'is_completed', 'is_starred', 'updated_at']
+        fields = ['uuid', 'title', 'completed_at', 'is_starred', 'updated_at', 'image']
+        read_only_fields = [
+            'uuid', 'updated_at'
+        ]
 
 
 class WishListItemDetailSerializer(ModelSerializer):
+    image = serializers.ImageField(read_only=True, required=False)
     sources = SourceItemSerializer(many=True, required=False)
+    is_completed = serializers.BooleanField(write_only=True, required=False)
+    completed_at = serializers.DateTimeField(read_only=True)
     # Validator for uniqueness
     # Source: https://www.django-rest-framework.org/api-guide/validators/
     # Source 2: https://stackoverflow.com/questions/70774389/django-rest-framwork-how-to-prevent-1062-duplicate-entry
     # title = CharField(max_length=400, validators=[UniqueValidator(queryset=WishItem.objects.all())])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['sources'].context.update(self.context)
+
+        if getattr(self, 'instance', None):
+            self.fields['sources'].context['instance'] = self.instance
 
     def validate_sources(self, attrs):
         sources = attrs
@@ -38,11 +56,12 @@ class WishListItemDetailSerializer(ModelSerializer):
             raise ValidationError('Duplicate URLs are not allowed.')
 
         # Check duplicates in database
+        # TODO: Lock the rows on check
         if getattr(self, 'instance', None):
             queryset = (ItemSource.objects
-                        .only('id', 'source_url', 'wish_item')
+                        .only('uuid', 'source_url', 'wish_item')
                         .filter(wish_item=self.context['instance'], source_url__in=urls))
-            existing_sources = [s['id'] for s in sources if 'id' in s]
+            existing_sources = [s['uuid'] for s in sources if 'uuid' in s]
             if existing_sources:
                 queryset = queryset.exclude(id__in=existing_sources).distinct('source_url')
             if queryset.exists():
@@ -58,7 +77,14 @@ class WishListItemDetailSerializer(ModelSerializer):
         :return: The created WishItem instance.
         """
         sources_data = validated_data.pop('sources', [])
-        wish_item = WishItem.objects.create(**validated_data)
+        is_completed = validated_data.pop('is_completed', False)
+
+        # Get a timestamp referring time zone of the server settings
+        completed_at = timezone.now() if is_completed else None
+
+        wish_item = WishItem.objects.create(**validated_data, completed_at=completed_at)
+
+        # TODO: Transaction
         if sources_data:
             item_sources = [ItemSource(wish_item=wish_item, **sd) for sd in sources_data]
             ItemSource.objects.bulk_create(item_sources)
@@ -72,8 +98,16 @@ class WishListItemDetailSerializer(ModelSerializer):
         :param validated_data: The validated data for updating the WishItem.
         :return: The updated WishItem instance.
         """
+
         sources = validated_data.pop('sources', [])
         current_sources = dict((i.id, i) for i in instance.sources.all())
+        prev_is_completed = instance.completed_at is not None
+        new_is_completed = validated_data.pop('is_completed', None)
+
+        if prev_is_completed and not new_is_completed:
+            instance.completed_at = None
+        elif not prev_is_completed and new_is_completed:
+            instance.completed_at = timezone.now()
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -81,14 +115,15 @@ class WishListItemDetailSerializer(ModelSerializer):
         new_items = []
         updated_items = []
         for src in sources:
-            if 'id' in src:
-                item = current_sources.pop(src['id'])
+            if 'uuid' in src:
+                item = current_sources.pop(src['uuid'])
                 for property in src.keys():
                     setattr(item, property, src[property])
                 updated_items.append(item)
             else:
                 new_items.append(ItemSource(wish_item=instance, **src))
 
+        # TODO: Raise Error if any issue occurs
         with transaction.atomic():
             ItemSource.objects.bulk_create(new_items)
             ItemSource.objects.select_for_update().bulk_update(updated_items,
@@ -101,19 +136,16 @@ class WishListItemDetailSerializer(ModelSerializer):
         return instance
 
     # Source: https://stackoverflow.com/questions/30560470/context-in-nested-serializers-django-rest-framework/58505856#58505856
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['sources'].context.update(self.context)
 
-        if getattr(self, 'instance', None):
-            self.fields['sources'].context['instance'] = self.instance
+    @override
+    def to_representation(self, instance: WishItem):
+        ret = super().to_representation(instance)
+        return ret
 
     class Meta:
         model = WishItem
-        fields = ['id', 'title', 'description', 'is_public', 'is_completed',
-                  'is_starred', 'created_at', 'updated_at', 'sources']
-        extra_kwargs = {
-            'id': {'read_only': True},
-            'created_at': {'read_only': True},
-            'updated_at': {'read_only': True},
-        }
+        fields = ['uuid', 'title', 'description', 'is_public', 'is_completed', 'completed_at',
+                  'is_starred', 'created_at', 'updated_at', 'sources', 'image']
+        read_only_fields = [
+            'uuid', 'created_at', 'updated_at'
+        ]

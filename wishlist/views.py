@@ -92,19 +92,19 @@ class WishListItemDetailView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = WishListItemDetailSerializer
 
-    def get(self, request: Request, id: str, *args, **kwargs) -> Response:
-        requested_item = get_object_or_404(WishItem.objects.only(*self.get_serializer_class().Meta.fields),
-                                           id=id,
+    def get(self, request: Request, uuid: str, *args, **kwargs) -> Response:
+        requested_item = get_object_or_404(WishItem.objects.all(),
+                                           uuid=uuid,
                                            deleted_at__isnull=True,
                                            user=request.user)
 
         serializer = self.get_serializer(instance=requested_item)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request: Request, id: str, *args, **kwargs) -> Response:
+    def put(self, request: Request, uuid: str, *args, **kwargs) -> Response:
         # Updated items, deleted items, and added items should be handled here.
         target = get_object_or_404(WishItem.objects.all(),
-                                   id=id,
+                                   uuid=uuid,
                                    deleted_at__isnull=True,
                                    user__id=request.user.id)
 
@@ -120,9 +120,9 @@ class WishListItemDetailView(GenericAPIView):
 
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request: Request, id: str, *args, **kwargs) -> Response:
-        target = get_object_or_404(WishItem.objects.only('id', 'deleted_at'),
-                                   id=id,
+    def delete(self, request: Request, uuid: str, *args, **kwargs) -> Response:
+        target = get_object_or_404(WishItem.objects.only('uuid', 'deleted_at'),
+                                   uuid=uuid,
                                    deleted_at__isnull=True,
                                    user=request.user)
 
