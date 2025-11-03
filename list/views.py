@@ -63,7 +63,7 @@ class PublicListView(APIView):
 
 class ListDetailView(GenericAPIView):
     serializer_class = ListDetailSerializer
-
+    lookup_field = 'uuid'
     # TODO: Open for anonymouse users when user set the settings
     permission_classes = [IsAuthenticated]
 

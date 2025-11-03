@@ -7,15 +7,15 @@ from rest_framework.exceptions import APIException
 from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
+from rest_framework import status, decorators
 from rest_framework.request import Request
 from rest_framework.response import Response
 from django.utils import timezone
+from rest_framework.viewsets import ModelViewSet
 
 from wishlist.models import WishItem
 from wishlist.pagination import WishItemListPagination
-from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer
-
+from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer, WishListItemImageSerializer
 
 # Create your views here.
 
@@ -29,6 +29,7 @@ class WishListView(GenericAPIView):
     pagination_class = WishItemListPagination
     permission_classes = [IsAuthenticated]
     serializer_class = WishListItemSerializer
+    lookup_field = 'uuid'
     parser_classes = (MultiPartParser, JSONParser)
 
     @override
@@ -90,6 +91,7 @@ class WishListItemDetailView(GenericAPIView):
     """
     ## TODO: Allow others when user sets it to public
     permission_classes = [IsAuthenticated]
+    lookup_field = 'uuid'
     serializer_class = WishListItemDetailSerializer
 
     def get(self, request: Request, uuid: str, *args, **kwargs) -> Response:
@@ -130,6 +132,10 @@ class WishListItemDetailView(GenericAPIView):
         target.save(update_fields=['deleted_at'])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class WishListItemPatchView(GenericAPIView):
+    pass
 
 
 class WishListItemImageViewSet(ModelViewSet):
