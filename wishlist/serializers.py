@@ -27,7 +27,7 @@ class WishListItemSerializer(ModelSerializer):
         model = WishItem
         fields = ['uuid', 'title', 'completed_at', 'is_starred', 'updated_at', 'image']
         read_only_fields = [
-            'uuid', 'updated_at'
+            'uuid', 'updated_at', 'image'
         ]
 
 
@@ -147,5 +147,15 @@ class WishListItemDetailSerializer(ModelSerializer):
         fields = ['uuid', 'title', 'description', 'is_public', 'is_completed', 'completed_at',
                   'is_starred', 'created_at', 'updated_at', 'sources', 'image']
         read_only_fields = [
-            'uuid', 'created_at', 'updated_at'
+            'uuid', 'created_at', 'updated_at', 'image'
         ]
+
+
+class WishListItemImageSerializer(ModelSerializer):
+    class Meta:
+         model = WishItem
+         fields = ['image']
+
+
+class WishListItemPatchSerializer(ModelSerializer):
+    pass

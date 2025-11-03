@@ -130,3 +130,27 @@ class WishListItemDetailView(GenericAPIView):
         target.save(update_fields=['deleted_at'])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class WishListItemImageViewSet(ModelViewSet):
+    serializer_class = WishListItemImageSerializer
+    allowed_methods = ['PUT', 'OPTIONS']
+    lookup_field = 'uuid'
+    queryset = WishItem.objects.only('image')
+
+    @decorators.action(
+        detail=True,
+        methods=['PUT'],
+        parser_classes = [MultiPartParser]
+    )
+    def up(self, request: Request, uuid: str) -> Response:
+        object = get_object_or_404(self.get_queryset(),
+                                   uuid=uuid,
+                                   deleted_at__isnull=True)
+        serializer = self.get_serializer(instance=object, data=request.data, partial=True)
+
+        if not serializer.is_valid(raise_exception=True):
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
