@@ -112,3 +112,13 @@ class UserPasswordChangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = WishListUser
         fields = ['old_password', 'password', 'password2']
+
+
+class JWTTokenSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+
+
+class JWTTokenWithExpirationSerializer(JWTTokenSerializer):
+    access_expiration = serializers.DateTimeField()
+    refresh_expiration = serializers.DateTimeField()

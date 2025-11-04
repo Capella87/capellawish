@@ -282,8 +282,8 @@ SIMPLE_JWT = {
 REST_AUTH = {
     'LOGIN_SERIALIZER': 'dj_rest_auth.serializers.LoginSerializer',
     'TOKEN_SERIALIZER': 'dj_rest_auth.serializers.TokenSerializer',
-    'JWT_SERIALIZER': 'dj_rest_auth.serializers.JWTSerializer',
-    'JWT_SERIALIZER_WITH_EXPIRATION': 'dj_rest_auth.serializers.JWTSerializerWithExpiration',
+    'JWT_SERIALIZER': 'account.serializers.JWTTokenSerializer',
+    'JWT_SERIALIZER_WITH_EXPIRATION': 'account.serializers.JWTTokenWithExpirationSerializer',
     'JWT_TOKEN_CLAIMS_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
     'PASSWORD_RESET_SERIALIZER': 'dj_rest_auth.serializers.PasswordResetSerializer',
     'PASSWORD_RESET_CONFIRM_SERIALIZER': 'dj_rest_auth.serializers.PasswordResetConfirmSerializer',
@@ -296,7 +296,7 @@ REST_AUTH = {
     'PASSWORD_RESET_USE_SITES_DOMAIN': False,
     'OLD_PASSWORD_FIELD_ENABLED': False,
     'LOGOUT_ON_PASSWORD_CHANGE': True,
-    'SESSION_LOGIN': True,
+    'SESSION_LOGIN': False,
     'USE_JWT': True,
 
     'JWT_AUTH_COOKIE': 'jwt_accesstoken',
