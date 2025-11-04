@@ -51,6 +51,7 @@ class UserSignUpSerializer(serializers.ModelSerializer):
 
 class UserAccountSerializer(serializers.ModelSerializer):
 
+    # Ensure read-only fields are not modified
     def check_readonly_data(self, data: dict) -> None:
         for field in self.Meta.read_only_fields:
             if field in data:
@@ -58,13 +59,14 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
     @override
     def validate(self, attrs: dict) -> dict:
-        check_readonly_data(self.initial_data)
+
+        self.check_readonly_data(self.initial_data)
         return attrs
 
     class Meta:
         model = WishListUser
-        fields = ['email', 'username', 'first_name', 'last_name', 'alias_name', 'middle_name']
-        read_only_fields = ['email', 'username'] # Restrict changing email and username for now.
+        fields = ['email', 'username', 'first_name', 'last_name', 'alias_name', 'middle_name', 'is_staff', 'is_superuser', 'bio', 'profile_image']
+        read_only_fields = ['email', 'username', 'is_staff', 'is_superuser', 'profile_image']
 
 
 class UserPasswordChangeSerializer(serializers.ModelSerializer):
