@@ -1,3 +1,4 @@
+import logging
 from typing import override
 
 from django.contrib.auth import password_validation
@@ -10,6 +11,9 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from account.models import WishListUser
+
+
+logger = logging.getLogger(__name__)
 
 
 class UserSignUpSerializer(serializers.ModelSerializer):
@@ -84,7 +88,10 @@ class UserPasswordChangeSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_old_password(self, value: str) -> str:
-        user = self.context.user
+        request = self.context.get('request', None)
+        if not request:
+            raise serializers.ValidationError('Failed to retrieve the user.')
+        user = request.user
 
         if not user.check_password(value):
             raise serializers.ValidationError('The old password is incorrect.')
