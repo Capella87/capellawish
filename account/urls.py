@@ -28,7 +28,8 @@ urlpatterns = [
     re_path(r'password/reset/confirm/?$', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),
 ]
 
-if settings.REST_AUTH and settings.REST_AUTH.get('USE_JWT'):
+from dj_rest_auth.app_settings import api_settings as rest_auth_settings
+if rest_auth_settings.USE_JWT:
     from rest_framework_simplejwt.views import TokenVerifyView
     from dj_rest_auth.jwt_auth import get_refresh_view
 
