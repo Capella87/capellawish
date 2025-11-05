@@ -118,6 +118,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
 
     'dj_rest_auth',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 
     'corsheaders',
 
@@ -132,6 +136,8 @@ INSTALLED_APPS = [
     'list'
 ]
 
+SITE_ID = 1
+
 MIDDLEWARE = [
     'silk.middleware.SilkyMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -142,6 +148,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'capellawish.urls'
