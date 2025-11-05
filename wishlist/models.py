@@ -33,7 +33,7 @@ class WishItem(models.Model):
     deleted_at = models.DateTimeField(auto_now=False, null=True)
 
     # User
-    user = models.ForeignKey('account.WishListUser', related_name='wish_item_user', on_delete=models.CASCADE)
+    user = models.ForeignKey('wishaccount.WishListUser', related_name='wish_item_user', on_delete=models.CASCADE)
 
     class Meta:
         indexes = [

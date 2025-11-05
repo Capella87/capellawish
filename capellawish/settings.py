@@ -208,7 +208,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'account.WishListUser'
+AUTH_USER_MODEL = 'wishaccount.WishListUser'
 
 # REST Framework Configuration
 REST_FRAMEWORK = {
@@ -367,10 +367,12 @@ MEDIA_URL = 'media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 # Django Silk Configuration
 
@@ -381,11 +383,13 @@ SILKY_SENSITIVE_KEYS = {'username', 'api', 'token', 'key', 'secret', 'password',
 
 SILKY_PERMISSIONS = lambda user: user.is_superuser
 
+
 # DRF Login
 
 LOGIN_URL = '/api/auth/login/'
 
 LOGIN_REDIRECT_URL = '/api/'
+
 
 # WWW Prepend
 
