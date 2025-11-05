@@ -138,7 +138,7 @@ class ListItemView(APIView):
         try:
             with transaction.atomic():
                 retrieved = WishItem.objects.select_for_update().in_bulk(id_list=serializer.validated_data.get('items', []),
-                                                                     field_name='id')
+                                                                     field_name='uuid')
                 target.items.add(*retrieved.values())
                 target.save()
         except IntegrityError:
@@ -164,7 +164,7 @@ class ListItemView(APIView):
         try:
             with transaction.atomic():
                 retrieved = target.items.select_for_update().in_bulk(id_list=serializer.validated_data.get('items', []),
-                                                                     field_name='id')
+                                                                     field_name='uuid')
                 target.items.remove(*retrieved.values())
         except IntegrityError:
             transaction.rollback()
