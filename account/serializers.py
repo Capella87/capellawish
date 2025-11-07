@@ -1,14 +1,12 @@
 import logging
 from typing import override
 
+from allauth.account.internal.flows.email_verification import send_verification_email_for_user
+from allauth.account.utils import setup_user_email, has_verified_email
 from django.contrib.auth import password_validation
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
-from rest_framework.fields import CurrentUserDefault
-from rest_framework.response import Response
-from rest_framework.request import Request
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from allauth.account import app_settings as allauth_settings
 
 from account.models import WishListUser
 
@@ -45,6 +43,21 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         validated_data.pop('password2')
         user = self.Meta.model.objects.create_user(**validated_data)
 
+        return user
+
+    def save(self, **kwargs) -> AbstractUser:
+        user = super().save(**kwargs)
+        request = self.context.get('request', None)
+        setup_user_email(request, user, [])
+
+        # Send a confirmation email if email verification is required
+        if allauth_settings.EMAIL_VERIFICATION == allauth_settings.EmailVerificationMethod.MANDATORY:
+            if not has_verified_email(user):
+                res = send_verification_email_for_user(request, user)
+                if not res:
+                    raise serializers.ValidationError('Failed to send verification email. It may be due to rate limiting.')
+            else:
+                raise serializers.ValidationError('Email verification failed.')
         return user
 
     class Meta:
@@ -122,3 +135,11 @@ class JWTTokenSerializer(serializers.Serializer):
 class JWTTokenWithExpirationSerializer(JWTTokenSerializer):
     access_expiration = serializers.DateTimeField()
     refresh_expiration = serializers.DateTimeField()
+
+
+class EmailConfirmationSerializer(serializers.Serializer):
+    key = serializers.CharField()
+
+
+class ResendEmailConfirmationSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=allauth_settings.SIGNUP_FIELDS['email']['required'])

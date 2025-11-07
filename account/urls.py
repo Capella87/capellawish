@@ -1,12 +1,8 @@
-from django.conf import settings
 from django.urls import path, re_path
+from django.views.generic import TemplateView
 
-from account import views
-from django.urls import path, include
-from rest_framework import urls
-from rest_framework import views
-
-from account.views import UserAccountSignUpView, UserAccountView, UserPasswordView
+from account.views import UserAccountSignUpView, UserAccountView, UserPasswordView, EmailConfirmationView, \
+    ResendEmailConfirmationView
 from dj_rest_auth.views import (
     LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView,
 )
@@ -18,7 +14,18 @@ urlpatterns = [
     re_path(r'account/?$', UserAccountView.as_view(), name='user'),
     re_path(r'password/change/?$', UserPasswordView.as_view(), name='password_change'),
     re_path(r'signup/?$', UserAccountSignUpView.as_view(), name='sign_up'),
-    # TODO: Email Verification for account activation
+    re_path(r'account/confirm-email/?$', EmailConfirmationView.as_view(), name='account_confirm_email'),
+    re_path(r'account/resend-email/?$', ResendEmailConfirmationView.as_view(), name='rest_resend_email'),
+
+    # re_path(
+    #     r'^account/confirm-email/(?P<key>[-:\w]+)/$', TemplateView.as_view(),
+    #     name='',
+    # ),
+    re_path(
+        r'account/email-verification-sent/?$', TemplateView.as_view(),
+        name='account_email_verification_sent',
+    ),
+
 
     # dj-rest-auth URLs
     re_path(r'login/?$', LoginView.as_view(), name='rest_login'),

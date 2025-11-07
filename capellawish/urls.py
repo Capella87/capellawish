@@ -31,7 +31,7 @@ from capellawish.views import MainView, AuthenticatedMainView
 urlpatterns = [
     path('', RedirectView.as_view(url='api/', permanent=False)),
     path('admin/', admin.site.urls),
-    path('api/auth/', include('account.urls')),
+    path('api/auth/', include('account.urls', namespace='account')),
     path('api/', MainView.as_view(), name='main'),
     path('api/item/', include('wishlist.urls'), name='wishlist'),
     path('api/list/', include('list.urls'), name='list'),

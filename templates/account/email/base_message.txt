@@ -1,0 +1,11 @@
+{% load i18n %}{% autoescape off %}{% blocktrans with site_name=current_site.name %}Hello from {{ site_name }}!{% endblocktrans %}
+
+{% block content %}{% endblock content %}
+
+{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}Thank you for using {{ site_name }}!
+{{ site_domain }}{% endblocktrans %}
+
+{% blocktrans %}Do not reply to this mail. This address is sender-only and cannot accept incoming email.{% endblocktrans %}
+{% blocktrans with support_email=support_email %}If you need any help or have any feedback or questions, please email {{ support_email }}.
+{% endblocktrans %}
+{% endautoescape %}
