@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from allauth.account import app_settings as allauth_settings
 
+from account.email import get_or_sync_user_email
 from account.models import WishListUser
 from account.serializers import UserSignUpSerializer, UserPasswordChangeSerializer, UserAccountSerializer, \
     EmailConfirmationSerializer, ResendEmailConfirmationSerializer
@@ -121,4 +122,24 @@ class ResendEmailConfirmationView(GenericAPIView):
             email_target.send_confirmation(request=request)
 
         return Response(data={'message': 'Confirmation email resent. Please check your inbox.'},
+                        status=status.HTTP_200_OK)
+
+
+# For logged-in, email unverified user to send email confirmation
+class SendEmailConfirmationView(GenericAPIView):
+    serializer_class = ResendEmailConfirmationSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = EmailAddress.objects.all()
+
+    def post(self, request: Request) -> Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email_entry = get_or_sync_user_email(request.user, serializer.validated_data['email'])
+        if email_entry.verified:
+            return Response(data={'message': 'Your email is already verified.',
+                                  'email': email_entry.email}, status=status.HTTP_200_OK)
+        _ = email_entry.send_confirmation(request=request, signup=False)
+
+        return Response(data={'message': 'Confirmation email sent. Please check your inbox.'},
                         status=status.HTTP_200_OK)

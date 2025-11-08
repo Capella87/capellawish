@@ -2,7 +2,7 @@ from django.urls import path, re_path
 from django.views.generic import TemplateView
 
 from account.views import UserAccountSignUpView, UserAccountView, UserPasswordView, EmailConfirmationView, \
-    ResendEmailConfirmationView
+    ResendEmailConfirmationView, SendEmailConfirmationView
 from dj_rest_auth.views import (
     LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView,
 )
@@ -15,6 +15,7 @@ urlpatterns = [
     re_path(r'password/change/?$', UserPasswordView.as_view(), name='password_change'),
     re_path(r'signup/?$', UserAccountSignUpView.as_view(), name='sign_up'),
     re_path(r'account/confirm-email/?$', EmailConfirmationView.as_view(), name='account_confirm_email'),
+    re_path(r'account/send-confirm-email/?$', SendEmailConfirmationView.as_view(), name='send_confirmation_email'),
     re_path(r'account/resend-email/?$', ResendEmailConfirmationView.as_view(), name='rest_resend_email'),
 
     # re_path(

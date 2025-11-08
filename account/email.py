@@ -1,10 +1,11 @@
 from typing import override
 
 from allauth.account.adapter import DefaultAccountAdapter
-from allauth.account.models import EmailConfirmationHMAC, EmailConfirmationMixin
+from allauth.account.models import EmailConfirmationHMAC, EmailConfirmationMixin, EmailAddress
 from allauth.core.internal.httpkit import get_frontend_url
 from allauth.utils import build_absolute_uri
 from django.conf import settings
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpRequest
 from django.urls import reverse
@@ -49,3 +50,16 @@ class DjangoPostOfficeAccountAdapter(DefaultAccountAdapter):
             url = reverse('account:account_confirm_email', query={'key': emailconfirmation.key})
             url = build_absolute_uri(request, url)
         return url
+
+
+def get_or_sync_user_email(user: AbstractBaseUser, email: str) -> EmailAddress:
+    email_queryset = EmailAddress.objects.filter(user_id=user.pk, email=email)
+    if not email_queryset.exists():
+        email_entry, _ = EmailAddress.objects.get_or_create(user_id=user.pk, email=email, defaults={
+            'verified': False,
+            'primary': False,
+        })
+    else:
+        email_entry = email_queryset.first()
+
+    return email_entry
