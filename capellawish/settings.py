@@ -386,6 +386,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Django Silk Configuration
 
 SILKY_AUTHENTICATION = True    # User must be logged in
+
 SILKY_AUTHORISATION = True     # User must have permissions
 
 SILKY_SENSITIVE_KEYS = {'username', 'api', 'token', 'key', 'secret', 'password', 'signature', 'access', 'refresh'}

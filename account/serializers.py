@@ -76,7 +76,6 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
     @override
     def validate(self, attrs: dict) -> dict:
-
         self.check_readonly_data(self.initial_data)
         return attrs
 
@@ -116,8 +115,7 @@ class UserPasswordChangeSerializer(serializers.ModelSerializer):
         password_validation.validate_password(new_password, instance)
         instance.set_password(new_password)
         instance.save()
-
-        password_validation.password_changed(instance, new_password)
+        password_validation.password_changed(new_password, instance)
 
         return instance
 
