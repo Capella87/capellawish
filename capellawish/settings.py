@@ -428,7 +428,8 @@ EMAIL_REQUIRED = False
 
 ACCOUNT_ADAPTER = 'account.email.DjangoPostOfficeAccountAdapter'
 
-ACCOUNT_CONFIRM_EMAIL_ON_GET = False
+# You must allow this option
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
 

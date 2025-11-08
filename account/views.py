@@ -88,11 +88,19 @@ class EmailConfirmationView(APIView, ConfirmEmailView):
     allowed_methods = ('POST', 'OPTIONS', 'HEAD')
     serializer_class = EmailConfirmationSerializer
 
+    # Automatic GET method to confirm email via link (Will be disabled for frontend handling)
     @override
-    def get(self, *args, **kwargs) -> Response:
-        # TODO: Re-allow GET method to redirect to a frontend page...
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        # TODO: Replace this to redirect to frontend page that handles email confirmation
+        self.kwargs['key'] = unquote(request.query_params['key'])
+        confirmation = self.get_object()
+        result = confirmation.confirm(request)
 
+        return Response(data={'message': 'Email is successfully verified.',
+                              'email': result.email},
+                        status=status.HTTP_200_OK)
+
+    # Manual POST method to confirm email
     def post(self, request: Request, *args, **kwargs) -> Response:
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
