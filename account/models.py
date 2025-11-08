@@ -67,7 +67,7 @@ class WishListUser(AbstractUser):
     date_updated = models.DateTimeField(_('date updated'), auto_now=True)
 
     profile_image = models.ImageField(_('profile image'),
-                                      upload_to='media/users/profile_images/',
+                                      upload_to='users/profile/',
                                       blank=True, null=True)
     bio = models.TextField(_('bio'), blank=True, editable=True)
     # birthday = models.DateField(_('date of birth'), blank=True, editable=True) # Optional
