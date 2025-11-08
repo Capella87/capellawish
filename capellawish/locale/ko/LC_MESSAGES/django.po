@@ -1,0 +1,8 @@
+
+#: templates/email/base_message.txt:8
+msgid "Do not reply to this mail. This address is sender-only and cannot accept incoming email."
+msgstr "이 메일에 회신하지 마세요. 이 주소는 발신 전용이며 수신 메일을 받을 수 없습니다."
+
+#: templates/email/base_message.txt:9
+msgid "If you need any help or have any feedback or questions, please email {{ support_email }}."
+msgstr "도움이 필요하시거나 피드백이나 질문이 있으시면 {{ support_email }}로 문의해 주세요."

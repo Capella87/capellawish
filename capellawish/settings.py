@@ -113,8 +113,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+
+    'dj_rest_auth',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 
     'corsheaders',
 
@@ -123,11 +130,15 @@ INSTALLED_APPS = [
 
     'silk',
 
+    'post_office',
+
     # Apps
     'account',
     'wishlist',
     'list'
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'silk.middleware.SilkyMiddleware',
@@ -139,6 +150,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'capellawish.urls'
@@ -205,7 +217,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'account.WishListUser'
+AUTH_USER_MODEL = 'wishaccount.WishListUser'
 
 # REST Framework Configuration
 REST_FRAMEWORK = {
@@ -213,8 +225,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'dj_rest_auth.jwt_auth.JWTAuthentication',
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
@@ -271,6 +285,38 @@ SIMPLE_JWT = {
     'TOKEN_BLACKLIST_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenBlacklistSerializer',
     # 'SLIDING_TOKEN_OBTAIN_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer',
     # 'SLIDING_TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer',
+}
+
+
+REST_AUTH = {
+    'LOGIN_SERIALIZER': 'dj_rest_auth.serializers.LoginSerializer',
+    'TOKEN_SERIALIZER': 'dj_rest_auth.serializers.TokenSerializer',
+    'JWT_SERIALIZER': 'account.serializers.JWTTokenSerializer',
+    'JWT_SERIALIZER_WITH_EXPIRATION': 'account.serializers.JWTTokenWithExpirationSerializer',
+    'JWT_TOKEN_CLAIMS_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
+    'PASSWORD_RESET_SERIALIZER': 'dj_rest_auth.serializers.PasswordResetSerializer',
+    'PASSWORD_RESET_CONFIRM_SERIALIZER': 'dj_rest_auth.serializers.PasswordResetConfirmSerializer',
+
+    'REGISTER_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
+
+    'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
+    'TOKEN_CREATOR': 'dj_rest_auth.utils.default_create_token',
+
+    'PASSWORD_RESET_USE_SITES_DOMAIN': False,
+    'OLD_PASSWORD_FIELD_ENABLED': False,
+    'LOGOUT_ON_PASSWORD_CHANGE': True,
+    'SESSION_LOGIN': False,
+    'USE_JWT': True,
+
+    'JWT_AUTH_COOKIE': 'jwt_accesstoken',
+    'JWT_AUTH_REFRESH_COOKIE': 'jwt_refreshtoken',
+    'JWT_AUTH_REFRESH_COOKIE_PATH': '/',
+    'JWT_AUTH_SECURE': True,
+    'JWT_AUTH_HTTPONLY': True,
+    'JWT_AUTH_SAMESITE': 'Lax',
+    'JWT_AUTH_RETURN_EXPIRATION': True,
+    'JWT_AUTH_COOKIE_USE_CSRF': False,
+    'JWT_AUTH_COOKIE_ENFORCE_CSRF_ON_UNAUTHENTICATED': False,
 }
 
 # CSRF Configurations
@@ -330,10 +376,12 @@ MEDIA_URL = 'media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 # Django Silk Configuration
 
@@ -344,15 +392,99 @@ SILKY_SENSITIVE_KEYS = {'username', 'api', 'token', 'key', 'secret', 'password',
 
 SILKY_PERMISSIONS = lambda user: user.is_superuser
 
+
 # DRF Login
 
 LOGIN_URL = '/api/auth/login/'
 
 LOGIN_REDIRECT_URL = '/api/'
 
+
 # WWW Prepend
 
 PREPEND_WWW = False
+
+
+# Email Settings
+
+EMAIL_BACKEND = 'post_office.EmailBackend'
+
+EMAIL_HOST = SECRETS.get('EMAIL_HOST', os.getenv('EMAIL_HOST', 'example.org'))
+
+EMAIL_PORT = SECRETS.get('EMAIL_PORT', os.getenv('EMAIL_PORT', 587))
+
+EMAIL_HOST_USER = SECRETS.get('EMAIL_HOST_USER', os.getenv('EMAIL_HOST_USER', 'PlaceholderUser'))
+
+EMAIL_HOST_PASSWORD = SECRETS.get('EMAIL_HOST_PASSWORD', os.getenv('EMAIL_HOST_PASSWORD', 'Placeholder'))
+
+EMAIL_USE_TLS = SECRETS.get('EMAIL_USE_TLS', os.getenv('EMAIL_USE_TLS', False))
+
+DEFAULT_FROM_EMAIL = SECRETS.get('DEFAULT_FROM_EMAIL', os.getenv('DEFAULT_FROM_EMAIL', ''))
+
+EMAIL_REQUIRED = False
+
+
+# AllAuth Settings
+
+ACCOUNT_ADAPTER = 'account.email.DjangoPostOfficeAccountAdapter'
+
+# You must allow this option
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+
+ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
+
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+
+ACCOUNT_EMAIL_VERIFICATION = SECRETS.get('ACCOUNT_EMAIL_VERIFICATION', os.getenv('ACCOUNT_EMAIL_VERIFICATION', 'none'))
+
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = False
+
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_MAX_ATTEMPTS = 3
+
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_TIMEOUT = 900
+
+ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_CHANGE = False
+
+ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_RESEND = True
+
+ACCOUNT_REAUTHENTICATION_TIMEOUT = 300
+
+ACCOUNT_REAUTHENTICATION_REQUIRED = False
+
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
+
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = LOGIN_URL
+
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = None
+
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+
+ACCOUNT_SIGNUP_REDIRECT_URL = LOGIN_REDIRECT_URL
+
+ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Site] '
+
+ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = True
+
+ACCOUNT_EMAIL_NOTIFICATIONS = False
+
+ACCOUNT_CHANGE_EMAIL = False
+
+ACCOUNT_EMAIL_MAX_LENGTH = 254
+
+ACCOUNT_MAX_EMAIL_ADDRESSES = None
+
+ACCOUNT_UNIQUE_EMAIL = True
+
+ACCOUNT_RATE_LIMITS = {
+    'confirm_email': '10/2m/key'
+}
+
+# Only for sending emails
+ACCOUNT_SIGNUP_FIELDS = ['username', 'email*', 'password1', 'password2']
+
+
+# Support email address
+SUPPORT_EMAIL = SECRETS.get('SUPPORT_EMAIL', os.getenv('SUPPORT_EMAIL', ''))
 
 # Cache Settings
 

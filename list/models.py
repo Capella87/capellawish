@@ -19,7 +19,7 @@ class ListModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True)
 
-    user = models.ForeignKey(WishListUser, on_delete=models.CASCADE)
+    user = models.ForeignKey('wishaccount.WishListUser', on_delete=models.CASCADE)
 
     # Share properties
     allow_completion_by_other = models.BooleanField(default=False)

@@ -9,7 +9,7 @@ from account.models import WishListUser
 
 class WishItem(models.Model):
     id = models.BigAutoField(primary_key=True)
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     # Basic fields
     title = models.CharField(max_length=400, blank=False)
@@ -33,7 +33,7 @@ class WishItem(models.Model):
     deleted_at = models.DateTimeField(auto_now=False, null=True)
 
     # User
-    user = models.ForeignKey('account.WishListUser', related_name='wish_item_user', on_delete=models.CASCADE)
+    user = models.ForeignKey('wishaccount.WishListUser', related_name='wish_item_user', on_delete=models.CASCADE)
 
     class Meta:
         indexes = [
@@ -45,7 +45,7 @@ class WishItem(models.Model):
 
 class ItemSource(models.Model):
     id = models.BigAutoField(primary_key=True)
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     # Note: Due to the base of URLField is CharField, using TextField with validator to allow more length than 200
     source_url = models.TextField(blank=False, validators=[validators.URLValidator()])
