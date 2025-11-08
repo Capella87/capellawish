@@ -93,9 +93,10 @@ class WishListItemDetailView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = 'uuid'
     serializer_class = WishListItemDetailSerializer
+    queryset = WishItem.objects.all()
 
     def get(self, request: Request, uuid: str, *args, **kwargs) -> Response:
-        requested_item = get_object_or_404(WishItem.objects.all(),
+        requested_item = get_object_or_404(self.get_queryset(),
                                            uuid=uuid,
                                            deleted_at__isnull=True,
                                            user=request.user)
@@ -105,7 +106,7 @@ class WishListItemDetailView(GenericAPIView):
 
     def put(self, request: Request, uuid: str, *args, **kwargs) -> Response:
         # Updated items, deleted items, and added items should be handled here.
-        target = get_object_or_404(WishItem.objects.all(),
+        target = get_object_or_404(self.get_queryset().select_for_update(),
                                    uuid=uuid,
                                    deleted_at__isnull=True,
                                    user__id=request.user.id)
@@ -123,7 +124,7 @@ class WishListItemDetailView(GenericAPIView):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request: Request, uuid: str, *args, **kwargs) -> Response:
-        target = get_object_or_404(WishItem.objects.only('uuid', 'deleted_at'),
+        target = get_object_or_404(self.get_queryset().only('uuid', 'deleted_at'),
                                    uuid=uuid,
                                    deleted_at__isnull=True,
                                    user=request.user)

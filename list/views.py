@@ -66,9 +66,10 @@ class ListDetailView(GenericAPIView):
     lookup_field = 'uuid'
     # TODO: Open for anonymouse users when user set the settings
     permission_classes = [IsAuthenticated]
+    queryset = ListModel.objects.filter(is_deleted=False)
 
     def get(self, request: Request, uuid: str) -> Response:
-        target = get_object_or_404(ListModel.objects,
+        target = get_object_or_404(self.get_queryset(),
                                    uuid=uuid,
                                    is_deleted=False,
                                    user=request.user)
@@ -77,7 +78,7 @@ class ListDetailView(GenericAPIView):
         return Response(data=serialized.data, status=status.HTTP_200_OK)
 
     def patch(self, request: Request, uuid: str) -> Response:
-        target = get_object_or_404(ListModel.objects,
+        target = get_object_or_404(self.get_queryset(),
                                    uuid=uuid,
                                    is_deleted=False,
                                    user=request.user)
