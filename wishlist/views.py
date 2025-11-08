@@ -30,7 +30,6 @@ class WishListView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = WishListItemSerializer
     lookup_field = 'uuid'
-    parser_classes = (MultiPartParser, JSONParser)
 
     @override
     def get_queryset(self) -> QuerySet:
@@ -141,8 +140,8 @@ class WishListItemPatchView(GenericAPIView):
 
 class WishListItemImageViewSet(ModelViewSet):
     serializer_class = WishListItemImageSerializer
-    allowed_methods = ['PUT', 'OPTIONS']
     lookup_field = 'uuid'
+    permission_classes = [IsAuthenticated]
     queryset = WishItem.objects.only('image')
 
     @decorators.action(
