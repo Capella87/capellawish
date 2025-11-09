@@ -5,7 +5,7 @@ description = "A simple wish list web application built with Django and DRF."
 requires-python = ">=3.13"
 dependencies = [
     "dj-rest-auth>=7.0.1",
-    "django>=5.2.7",
+    "django>=5.2.8",
     "django-allauth[socialaccount]>=65.13.0",
     "django-cors-headers>=4.9.0",
     "django-filter>=25.2",
@@ -14,12 +14,12 @@ dependencies = [
     "django-silk[formatting]>=5.4.3",
     "djangorestframework>=3.16.1",
     "djangorestframework-simplejwt[crypto]>=5.5.1",
-    "drf-spectacular[sidecar]>=0.28.0",
-    "hypercorn[h3]>=0.17.3",
-    "markdown>=3.9",
+    "drf-spectacular[sidecar]>=0.29.0",
+    "hypercorn[h3]>=0.18.0",
+    "markdown>=3.10",
     "pillow>=12.0.0",
     "psycopg[binary]>=3.2.12",
-    "pytest>=8.4.2",
+    "pytest>=9.0.0",
     "pytest-django>=4.11.1",
     # "scalar_doc>=0.1.8",
 ]
