@@ -119,6 +119,7 @@ dependencies = [
     { name = "django-filter" },
     { name = "django-guardian" },
     { name = "django-post-office" },
+    { name = "django-silk", extra = ["formatting"] },
     { name = "djangorestframework" },
     { name = "djangorestframework-simplejwt", extra = ["crypto"] },
     { name = "drf-spectacular", extra = ["sidecar"] },
@@ -131,7 +132,6 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "django-silk", extra = ["formatting"] },
     { name = "flower" },
     { name = "pytest" },
     { name = "pytest-django" },
@@ -148,6 +148,7 @@ requires-dist = [
     { name = "django-filter", specifier = ">=25.2" },
     { name = "django-guardian", specifier = ">=3.2.0" },
     { name = "django-post-office", specifier = ">=3.10.1" },
+    { name = "django-silk", extras = ["formatting"], specifier = ">=5.4.3" },
     { name = "djangorestframework", specifier = ">=3.16.1" },
     { name = "djangorestframework-simplejwt", extras = ["crypto"], specifier = ">=5.5.1" },
     { name = "drf-spectacular", extras = ["sidecar"], specifier = ">=0.29.0" },
@@ -160,7 +161,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "django-silk", extras = ["formatting"], specifier = ">=5.4.3" },
     { name = "flower", specifier = ">=2.0.1" },
     { name = "pytest", specifier = ">=9.0.0" },
     { name = "pytest-django", specifier = ">=4.11.1" },
