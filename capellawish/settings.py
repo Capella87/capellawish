@@ -494,3 +494,9 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 }
+
+
+# Celery Settings
+
+CELERY_BROKER_URL = SECRETS.get('CELERY_BROKER_URL', os.getenv('CELERY_BROKER_URL', ''))
+CELERY_RESULT_BACKEND = SECRETS.get('CELERY_RESULT_BACKEND', os.getenv('CELERY_RESULT_BACKEND', ''))
