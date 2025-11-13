@@ -1,6 +1,6 @@
 import logging
 from typing import override
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import APIException
@@ -15,7 +15,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from wishlist.models import WishItem
 from wishlist.pagination import WishItemListPagination
-from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer, WishListItemImageSerializer
+from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer, WishListItemImageSerializer, \
+    WishListItemPatchSerializer
 
 # Create your views here.
 
@@ -122,6 +123,24 @@ class WishListItemDetailView(GenericAPIView):
 
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
+    def patch(self, request: Request, uuid: str, *args, **kwargs) -> Response:
+        target = get_object_or_404(self.get_queryset(),
+                                   uuid=uuid,
+                                   deleted_at__isnull=True,
+                                   user__id=request.user.id)
+        serializer = WishListItemPatchSerializer(instance=target, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            with transaction.atomic():
+                serializer.save()
+        except IntegrityError:
+            transaction.rollback()
+            logger.exception('Integrity Error occurred')
+            raise APIException(code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     def delete(self, request: Request, uuid: str, *args, **kwargs) -> Response:
         target = get_object_or_404(self.get_queryset().only('uuid', 'deleted_at'),
                                    uuid=uuid,
@@ -132,10 +151,6 @@ class WishListItemDetailView(GenericAPIView):
         target.save(update_fields=['deleted_at'])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class WishListItemPatchView(GenericAPIView):
-    pass
 
 
 class WishListItemImageViewSet(ModelViewSet):

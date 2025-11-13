@@ -158,4 +158,29 @@ class WishListItemImageSerializer(ModelSerializer):
 
 
 class WishListItemPatchSerializer(ModelSerializer):
-    pass
+    # sources = SourceItemSerializer(many=True, required=False)
+    is_completed = serializers.BooleanField(write_only=True, required=False)
+    completed_at = serializers.DateTimeField(read_only=True)
+
+    @override
+    def update(self, instance: WishItem, validated_data: dict) -> WishItem:
+        prev_is_completed = instance.completed_at is not None
+        new_is_completed = validated_data.pop('is_completed', None)
+
+        if prev_is_completed and not new_is_completed:
+            instance.completed_at = None
+        elif not prev_is_completed and new_is_completed:
+            instance.completed_at = timezone.now()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+    class Meta:
+        model = WishItem
+        fields = ['uuid', 'title', 'description', 'is_public', 'is_completed', 'completed_at',
+                  'is_starred', 'created_at', 'updated_at']
+        read_only_fields = [
+            'uuid', 'created_at', 'updated_at', 'image'
+        ]
