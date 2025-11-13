@@ -100,7 +100,7 @@ class WishListItemDetailSerializer(ModelSerializer):
         """
 
         sources = validated_data.pop('sources', [])
-        current_sources = dict((i.id, i) for i in instance.sources.all())
+        current_sources = dict((i.uuid, i) for i in instance.sources.all())
         prev_is_completed = instance.completed_at is not None
         new_is_completed = validated_data.pop('is_completed', None)
 
