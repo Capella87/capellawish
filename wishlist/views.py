@@ -114,7 +114,7 @@ class WishListItemDetailView(GenericAPIView):
 
     def put(self, request: Request, uuid: str, *args, **kwargs) -> Response:
         # Updated items, deleted items, and added items should be handled here.
-        target = get_object_or_404(self.get_queryset().select_for_update(),
+        target = get_object_or_404(self.get_queryset(),
                                    uuid=uuid,
                                    deleted_at__isnull=True,
                                    user__id=request.user.id)
