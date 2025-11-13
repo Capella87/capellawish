@@ -124,7 +124,8 @@ class WishListItemDetailView(GenericAPIView):
         if not serializer.is_valid(raise_exception=True):
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
-            serializer.save()
+            with transaction.atomic():
+                serializer.save()
         except IntegrityError as e:
             logger.exception('Integrity Error occurred')
             raise APIException('Internal server error')
