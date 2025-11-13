@@ -52,8 +52,16 @@ class WishListView(GenericAPIView):
         qs = self.get_queryset().order_by('-updated_at')
 
         starred = request.query_params.get('starred', None)
-        if starred:
+        if starred is not None:
             qs = qs.filter(is_starred=True)
+
+        completed = request.query_params.get('completed', None)
+        if completed is not None:
+            qs = qs.filter(completed_at__isnull=False)
+
+        public_posts = request.query_params.get('public', None)
+        if public_posts is not None:
+            qs = qs.filter(is_public=True)
 
         paginated = self.paginate_queryset(queryset=qs)
         serialized = self.get_serializer(instance=paginated, many=True)
