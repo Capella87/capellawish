@@ -50,8 +50,7 @@ class ListView(GenericAPIView):
     def post(self, request: Request) -> Response:
         serializer = self.serializer_class(data=request.data)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -83,8 +82,7 @@ class ListDetailView(GenericAPIView):
                                    is_deleted=False,
                                    user=request.user)
         serialized = self.serializer_class(instance=target, data=request.data, partial=True)
-        if not serialized.is_valid():
-            return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+        serialized.is_valid(raise_exception=True)
         serialized.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -132,8 +130,7 @@ class ListItemView(APIView):
                                    user_id=request.user.pk)
 
         serializer = ListItemSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         # Concurrency
         try:
@@ -156,8 +153,7 @@ class ListItemView(APIView):
                                         user_id=request.user.pk)
 
         serializer = ListItemSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         # Concurrency
         # TODO: Filter already deleted items

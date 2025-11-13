@@ -86,8 +86,7 @@ class WishListView(GenericAPIView):
         serializer = WishListItemDetailSerializer(data=request.data)
 
         ## TODO: Filter duplicate titles for the same user.
-        if not serializer.is_valid(raise_exception=True):
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
 
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
@@ -121,8 +120,8 @@ class WishListItemDetailView(GenericAPIView):
 
         # Merge the existing data with the new data
         serializer = self.get_serializer(instance=target, data=request.data, partial=True)
-        if not serializer.is_valid(raise_exception=True):
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+
         try:
             with transaction.atomic():
                 serializer.save()
@@ -178,9 +177,7 @@ class WishListItemImageViewSet(ModelViewSet):
                                    uuid=uuid,
                                    deleted_at__isnull=True)
         serializer = self.get_serializer(instance=object, data=request.data, partial=True)
-
-        if not serializer.is_valid(raise_exception=True):
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)

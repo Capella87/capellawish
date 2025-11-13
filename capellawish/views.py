@@ -25,17 +25,17 @@ class MainView(GenericAPIView):
                         status=rest_framework.status.HTTP_200_OK)
 
     def post(self, request: Request) -> Response:
-        data = SampleSerializer(data=request.data)
+        serializer = SampleSerializer(data=request.data)
 
-        if data.is_valid():
-            return Response(data=data.data,
+        if serializer.is_valid(raise_exception=False):
+            return Response(data=serializer.data,
                             status=rest_framework.status.HTTP_200_OK)
 
         # Return error message with Problem Details format
         else:
             message = {
                 'message': 'Invalid data',
-                'errors': data.errors,
+                'errors': serializer.errors,
                 'user_agent': request.META['HTTP_USER_AGENT'],
             }
 
