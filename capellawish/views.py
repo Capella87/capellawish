@@ -28,7 +28,9 @@ class MainView(GenericAPIView):
         serializer = SampleSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=False):
-            return Response(data=serializer.data,
+            ret = serializer.data
+            ret.update({'user_agent': request.META['HTTP_USER_AGENT']})
+            return Response(data=ret,
                             status=rest_framework.status.HTTP_200_OK)
 
         # Return error message with Problem Details format
