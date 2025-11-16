@@ -1,7 +1,12 @@
+import secrets
 from typing import Any, Generator
 
 import pytest
+from allauth.account.models import EmailAddress
+from rest_framework.status import HTTP_201_CREATED
 from rest_framework.test import APIClient
+from account.models import WishListUser
+
 
 # Note: You must grant CREATEDB role to the client user of database (Postgres).
 # e.g) ALTER ROLE capellauser CREATEDB;
@@ -21,3 +26,57 @@ def disable_file_logging(settings: dict) -> None:
     :return: None
     """
     settings.LOGGING['loggers']['django']['handlers'] = ['console']
+
+@pytest.fixture(autouse=True, scope='session')
+def admin_user(django_db_setup, django_db_blocker) -> WishListUser:
+    from django.conf import settings as django_settings
+    client = APIClient()
+    django_settings.ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+    username = 'admin'
+    email = 'admin@example.com'
+    password = secrets.token_urlsafe(16)
+    with django_db_blocker.unblock():
+        client.post('/api/auth/signup/',
+                    data={'email': email, 'password': password, 'password2': password, 'username': username },
+                    content_type='application/json',
+                    HTTP_USER_AGENT='Mozilla/5.0 pytest-agent/1.0')
+        created_user = WishListUser.objects.get(email=email)
+        created_user.is_active = True
+        created_user.save()
+
+        email_obj = EmailAddress.objects.get(email=email)
+        email_obj.verified = True
+        email_obj.save()
+
+    return created_user
+
+@pytest.fixture(autouse=True, scope='function')
+def authenticated_client(api_client: APIClient, admin_user: WishListUser) -> APIClient:
+    api_client.force_authenticate(admin_user)
+    return api_client
+
+@pytest.fixture
+def sample_wishlist_data() -> dict:
+    data = {
+        'title': 'Sample Product',
+        'description': 'This is a sample.',
+        'is_public': False,
+        'is_completed': False,
+        'is_starred': False,
+        'sources': [
+            {
+                'source_url': 'https://example.com',
+                'source_name': 'SampleMarket',
+            }
+        ]
+    }
+    return data
+
+@pytest.fixture
+def sample_wishlist_item(authenticated_client: APIClient, sample_wishlist_data: dict) -> dict:
+    response = authenticated_client.post('/api/item/',
+                                         data=sample_wishlist_data,
+                                         content_type='application/json')
+    assert response.status_code == HTTP_201_CREATED
+    return response.data
