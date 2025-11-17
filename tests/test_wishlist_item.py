@@ -30,23 +30,21 @@ def test_create_wishlist_item(authenticated_client: APIClient, sample_wishlist_d
 def test_retrieve_wishlist_item_detail_by_uuid(authenticated_client: APIClient,
                                                admin_user: WishListUser,
                                                sample_wishlist_item: dict) -> None:
-    target = WishItem.objects.get(uuid=sample_wishlist_item['uuid'])
-    assert target is not None
-    uuid = target.uuid
+    assert WishItem.objects.filter(uuid=sample_wishlist_item['uuid']).exists()
+    uuid = sample_wishlist_item['uuid']
     response = authenticated_client.get(f'/api/item/{uuid}')
 
     assert response.status_code == HTTP_200_OK
-    assert response.data['title'] == target.title
-    assert response.data['description'] == target.description
-    assert response.data['is_starred'] == target.is_starred
-    assert response.data['is_public'] == target.is_public
+    assert response.data['title'] == sample_wishlist_item['title']
+    assert response.data['description'] == sample_wishlist_item['description']
+    assert response.data['is_starred'] == sample_wishlist_item['is_starred']
+    assert response.data['is_public'] == sample_wishlist_item['is_public']
 
 @pytest.mark.django_db
 def test_retrieve_wishlist_items(authenticated_client: APIClient,
                                  admin_user: WishListUser,
                                  sample_wishlist_item: dict) -> None:
-    targets = WishItem.objects.filter(user_id=admin_user.pk)
-    assert targets is not None
+    assert WishItem.objects.filter(user_id=admin_user.pk).exists()
     response = authenticated_client.get(f'/api/item/')
 
     assert response.status_code == HTTP_200_OK
