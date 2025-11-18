@@ -7,6 +7,11 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.django_db
 def test_send_get_request(api_client: APIClient) -> None:
+    """
+    Sends a GET request to the main API endpoint and verifies the response.
+    :param api_client: An APIClient instance for making requests (Regardless of users)
+    :return:
+    """
     response = api_client.get('/api/', HTTP_USER_AGENT='Mozilla/5.0 pytest-agent/1.0')
     logger.info(response.data)
 
@@ -15,6 +20,11 @@ def test_send_get_request(api_client: APIClient) -> None:
 
 @pytest.mark.django_db
 def test_send_post_request(api_client: APIClient) -> None:
+    """
+    Sends a POST request to the main API endpoint with sample data and asserts the response.
+    :param api_client: An APIClient instance for making requests (Regardless of users)
+    :return:
+    """
     title = 'TEST'
     description = 'This is a test description.'
 

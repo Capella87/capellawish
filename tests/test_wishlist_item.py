@@ -11,7 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.django_db
-def test_create_wishlist_item(authenticated_client: APIClient, sample_wishlist_data: dict) -> None:
+def test_create_wishlist_item(authenticated_client: APIClient,
+                              sample_wishlist_data: dict) -> None:
+    """
+    Tests the creation of a new wishlist item and check the response data.
+    :param authenticated_client: An authenticated APIClient instance
+    :param sample_wishlist_data: A Dictionary containing sample wishlist item data
+    :return:
+    """
     response = authenticated_client.post('/api/item/',
                                          data=sample_wishlist_data,
                                          content_type='application/json')
@@ -30,6 +37,13 @@ def test_create_wishlist_item(authenticated_client: APIClient, sample_wishlist_d
 def test_retrieve_wishlist_item_detail_by_uuid(authenticated_client: APIClient,
                                                admin_user: WishListUser,
                                                sample_wishlist_item: dict) -> None:
+    """
+    Tests retrieving a wishlist item by UUID (Not a primary key) and verifies the response data.
+    :param authenticated_client: An authenticated APIClient instance
+    :param admin_user: A WishListUser instance (admin)
+    :param sample_wishlist_item: A sample wishlist item data
+    :return:
+    """
     assert WishItem.objects.filter(uuid=sample_wishlist_item['uuid']).exists()
     uuid = sample_wishlist_item['uuid']
     response = authenticated_client.get(f'/api/item/{uuid}')
@@ -44,6 +58,13 @@ def test_retrieve_wishlist_item_detail_by_uuid(authenticated_client: APIClient,
 def test_retrieve_wishlist_items(authenticated_client: APIClient,
                                  admin_user: WishListUser,
                                  sample_wishlist_item: dict) -> None:
+    """
+    Tests retrieving a list of wishlist items and verifies the response data.
+    :param authenticated_client: An authenticated APIClient instance
+    :param admin_user: A WishListUser instance (admin)
+    :param sample_wishlist_item: A sample wishlist item data
+    :return:
+    """
     assert WishItem.objects.filter(user_id=admin_user.pk).exists()
     response = authenticated_client.get(f'/api/item/')
 
@@ -60,6 +81,16 @@ def test_patch_update_wishlist_item(authenticated_client: APIClient,
                                     test_property: str,
                                     test_input: str,
                                     test_expected: str) -> None:
+    """
+    Tests partial update (PATCH) of a wishlist item property and verifies the response.
+    :param authenticated_client: An authenticated APIClient instance
+    :param admin_user: A WishListUser instance (admin)
+    :param sample_wishlist_item: A sample wishlist item data
+    :param test_property: (Parameter for test) The property to be updated
+    :param test_input: (Parameter for test) The input value for the property
+    :param test_expected: (Parameter for test) The expected value after update
+    :return:
+    """
     uuid = sample_wishlist_item['uuid']
     assert WishItem.objects.filter(uuid=uuid).exists()
 
@@ -76,6 +107,13 @@ def test_patch_update_wishlist_item(authenticated_client: APIClient,
 def test_delete_wishlist_item(authenticated_client: APIClient,
                               admin_user: WishListUser,
                               sample_wishlist_item: dict) -> None:
+    """
+    Tests the deletion of a wishlist item and verifies deletion. (soft delete)
+    :param authenticated_client: An authenticated APIClient instance
+    :param admin_user: A WishListUser instance (admin)
+    :param sample_wishlist_item: A sample wishlist item data
+    :return:
+    """
     uuid = sample_wishlist_item['uuid']
     assert WishItem.objects.get(uuid=uuid).deleted_at is None
     response = authenticated_client.delete(f'/api/item/{uuid}')
@@ -87,6 +125,13 @@ def test_delete_wishlist_item(authenticated_client: APIClient,
 def test_put_wishlist_item(authenticated_client: APIClient,
                            admin_user: WishListUser,
                            sample_wishlist_item: dict) -> None:
+    """
+    Tests full update (PUT) of a wishlist item and verifies the response data.
+    :param authenticated_client: An authenticated APIClient instance
+    :param admin_user: A WishListUser instance (admin)
+    :param sample_wishlist_item: A sample wishlist item data
+    :return:
+    """
     uuid = sample_wishlist_item['uuid']
     assert WishItem.objects.filter(uuid=uuid).exists()
 
