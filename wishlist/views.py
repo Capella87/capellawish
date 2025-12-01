@@ -13,9 +13,9 @@ from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework.viewsets import ModelViewSet
 
-from wishlist.models import WishItem
+from wishlist.models import WishItem, BlobImage
 from wishlist.pagination import WishItemListPagination
-from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer, WishListItemImageSerializer
+from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer, BlobImageUploadSerializer
 
 # Create your views here.
 
@@ -139,7 +139,7 @@ class WishListItemPatchView(GenericAPIView):
 
 
 class WishListItemImageViewSet(ModelViewSet):
-    serializer_class = WishListItemImageSerializer
+    serializer_class = BlobImageUploadSerializer
     lookup_field = 'uuid'
     permission_classes = [IsAuthenticated]
     queryset = WishItem.objects.only('image')
@@ -153,10 +153,10 @@ class WishListItemImageViewSet(ModelViewSet):
         object = get_object_or_404(self.get_queryset(),
                                    uuid=uuid,
                                    deleted_at__isnull=True)
-        serializer = self.get_serializer(instance=object, data=request.data, partial=True)
-
-        if not serializer.is_valid(raise_exception=True):
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        image_blob: BlobImage = serializer.save()
+        object.image = image_blob
+        object.save(update_fields=['image'])
 
         return Response(status=status.HTTP_204_NO_CONTENT)

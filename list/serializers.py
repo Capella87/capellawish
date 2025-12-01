@@ -1,13 +1,15 @@
 from django.db import models
 from django.db.models import QuerySet
 from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField
 
 from list.models import ListModel
-from wishlist.serializers import WishListItemSerializer
+from wishlist.models import BlobImage
 
 
 class ListSerializer(serializers.ModelSerializer):
     item_count = serializers.SerializerMethodField()
+    image = SerializerMethodField()
 
     class Meta:
         model = ListModel
@@ -17,10 +19,14 @@ class ListSerializer(serializers.ModelSerializer):
     def get_item_count(self, obj):
         return obj.items.count()
 
+    def get_image(self, obj: BlobImage) -> str | None:
+        return None if obj.image is None else self.context.get('request').build_absolute_uri(obj.image.image.url)
+
 
 class ListDetailSerializer(serializers.ModelSerializer):
     # TODO: Pagination for nested items:
     item_count = serializers.SerializerMethodField()
+    image = SerializerMethodField()
 
     class Meta:
         model = ListModel
@@ -30,6 +36,9 @@ class ListDetailSerializer(serializers.ModelSerializer):
 
     def get_item_count(self, obj):
         return obj.items.count()
+
+    def get_image(self, obj: BlobImage) -> str | None:
+        return None if obj.image is None else self.context.get('request').build_absolute_uri(obj.image.image.url)
 
 
 class ListItemSerializer(serializers.Serializer):

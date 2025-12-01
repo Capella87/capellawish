@@ -3,13 +3,51 @@ from typing import override
 
 from django.db import transaction
 from django.db.models import ImageField
+from django.db.models.fields.files import ImageFieldFile
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer, UUIDField
 from django.utils import timezone
+from hashlib import sha256
 
-from wishlist.models import WishItem, ItemSource
+from wishlist.models import WishItem, ItemSource, BlobImage
 import uuid
+
+
+class BlobImageSerializer(ModelSerializer):
+    """
+    Serializer for BlobImage model to represent image data.
+    """
+    class Meta:
+        model = BlobImage
+        fields = ['image']
+        read_only_fields = ['image']
+
+
+class BlobImageUploadSerializer(ModelSerializer):
+    """
+    Serializer for uploading an image to BlobImage model.
+    """
+    @override
+    def create(self, validated_data: dict) -> BlobImage:
+        # Hash calculation
+        image_binary = validated_data['image']
+
+        hash_obj = sha256()
+        for chunk in image_binary.chunks():
+            hash_obj.update(chunk)
+        sha256_hash = hash_obj.hexdigest()
+
+        blob, _ = BlobImage.objects.get_or_create(
+            sha256_hash=sha256_hash,
+            defaults={'image': image_binary})
+        return blob
+
+    class Meta:
+        model = BlobImage
+        fields = ['image', 'sha256_hash', 'uploaded_at']
+        read_only_fields = ['sha256_hash', 'uploaded_at']
 
 
 class SourceItemSerializer(ModelSerializer):
@@ -22,6 +60,10 @@ class SourceItemSerializer(ModelSerializer):
 
 class WishListItemSerializer(ModelSerializer):
     uuid = UUIDField(default=uuid.uuid4)
+    image = SerializerMethodField()
+
+    def get_image(self, obj: BlobImage) -> str | None:
+        return None if obj.image is None else self.context.get('request').build_absolute_uri(obj.image.image.url)
 
     class Meta:
         model = WishItem
@@ -32,7 +74,7 @@ class WishListItemSerializer(ModelSerializer):
 
 
 class WishListItemDetailSerializer(ModelSerializer):
-    image = serializers.ImageField(read_only=True, required=False)
+    image = SerializerMethodField(read_only=True, required=False)
     sources = SourceItemSerializer(many=True, required=False)
     is_completed = serializers.BooleanField(write_only=True, required=False)
     completed_at = serializers.DateTimeField(read_only=True)
@@ -142,6 +184,9 @@ class WishListItemDetailSerializer(ModelSerializer):
         ret = super().to_representation(instance)
         return ret
 
+    def get_image(self, obj: BlobImage) -> str | None:
+        return None if obj.image is None else self.context.get('request').build_absolute_uri(obj.image.image.url)
+
     class Meta:
         model = WishItem
         fields = ['uuid', 'title', 'description', 'is_public', 'is_completed', 'completed_at',
@@ -149,12 +194,6 @@ class WishListItemDetailSerializer(ModelSerializer):
         read_only_fields = [
             'uuid', 'created_at', 'updated_at', 'image'
         ]
-
-
-class WishListItemImageSerializer(ModelSerializer):
-    class Meta:
-         model = WishItem
-         fields = ['image']
 
 
 class WishListItemPatchSerializer(ModelSerializer):
