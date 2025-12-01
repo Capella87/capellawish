@@ -52,10 +52,11 @@ class ItemSource(models.Model):
     source_name = models.CharField(max_length=300, blank=True)
     wish_item = models.ForeignKey(WishItem, related_name='sources', on_delete=models.CASCADE)
     description = models.TextField(blank=True)
+    is_primary = models.BooleanField(default=False)
 
     class Meta:
         indexes = [
-            models.Index(fields=['wish_item', 'source_url'], name='idx_item_source_item_url'),
+            models.Index(fields=['wish_item', 'source_url', 'is_primary'], name='idx_item_source_item_url'),
             models.Index(fields=['uuid'], name='idx_item_source_uuid'),
         ]
         constraints = [
