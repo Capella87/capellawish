@@ -10,6 +10,7 @@ from wishlist.models import BlobImage
 class ListSerializer(serializers.ModelSerializer):
     item_count = serializers.SerializerMethodField()
     image = SerializerMethodField()
+    upload_image = serializers.BooleanField(write_only=True, default=False)
 
     class Meta:
         model = ListModel

@@ -61,6 +61,7 @@ class SourceItemSerializer(ModelSerializer):
 class WishListItemSerializer(ModelSerializer):
     uuid = UUIDField(default=uuid.uuid4)
     image = SerializerMethodField()
+    upload_image = serializers.BooleanField(write_only=True, default=False)
 
     def get_image(self, obj: BlobImage) -> str | None:
         return None if obj.image is None else self.context.get('request').build_absolute_uri(obj.image.image.url)
