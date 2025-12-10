@@ -1,5 +1,4 @@
 import uuid
-from typing import override
 
 from django.core import validators
 from django.db import models

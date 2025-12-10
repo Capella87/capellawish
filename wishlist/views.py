@@ -13,9 +13,10 @@ from rest_framework.response import Response
 from django.utils import timezone
 from rest_framework.viewsets import ModelViewSet
 
-from wishlist.models import WishItem, BlobImage
+from wishlist.models import WishItem, BlobImage, ItemSource
 from wishlist.pagination import WishItemListPagination
 from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer, BlobImageUploadSerializer
+from crawler.tasks import retrieve_data_from_url
 
 # Create your views here.
 
@@ -75,11 +76,14 @@ class WishListView(GenericAPIView):
         # TODO: Prevent duplicates
 
         serializer = WishListItemDetailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        has_image_upload = serializer.validated_data.get('upload_image', False)
+        res: WishItem = serializer.save(user=request.user)
 
-        ## TODO: Filter duplicate titles for the same user.
-        if not serializer.is_valid(raise_exception=True):
-            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save(user=request.user)
+        primary_source = ItemSource.objects.filter(is_primary=True).get(wish_item=res.pk)
+        retrieve_data_from_url.apply_async(args=(primary_source.source_url,
+                                                 res.pk,
+                                                 True if has_image_upload else False))
 
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 

@@ -60,8 +60,7 @@ class SourceItemSerializer(ModelSerializer):
 
 class WishListItemSerializer(ModelSerializer):
     uuid = UUIDField(default=uuid.uuid4)
-    image = SerializerMethodField()
-    upload_image = serializers.BooleanField(write_only=True, default=False)
+    image = SerializerMethodField(read_only=True)
 
     def get_image(self, obj: BlobImage) -> str | None:
         return None if obj.image is None else self.context.get('request').build_absolute_uri(obj.image.image.url)
@@ -79,6 +78,7 @@ class WishListItemDetailSerializer(ModelSerializer):
     sources = SourceItemSerializer(many=True, required=False)
     is_completed = serializers.BooleanField(write_only=True, required=False)
     completed_at = serializers.DateTimeField(read_only=True)
+    upload_image = serializers.BooleanField(write_only=True, default=False)
     # Validator for uniqueness
     # Source: https://www.django-rest-framework.org/api-guide/validators/
     # Source 2: https://stackoverflow.com/questions/70774389/django-rest-framwork-how-to-prevent-1062-duplicate-entry
@@ -121,6 +121,7 @@ class WishListItemDetailSerializer(ModelSerializer):
         """
         sources_data = validated_data.pop('sources', [])
         is_completed = validated_data.pop('is_completed', False)
+        validated_data.pop('upload_image', False)
 
         # Get a timestamp referring time zone of the server settings
         completed_at = timezone.now() if is_completed else None
@@ -129,7 +130,10 @@ class WishListItemDetailSerializer(ModelSerializer):
 
         # TODO: Transaction
         if sources_data:
-            item_sources = [ItemSource(wish_item=wish_item, **sd) for sd in sources_data]
+            item_sources = []
+            if len(sources_data) > 0:
+                item_sources.append(ItemSource(wish_item=wish_item, is_primary=True, **sources_data[0]))
+            item_sources.extend([ItemSource(wish_item=wish_item, is_primary=False, **sources_data[i]) for i in range(1, len(sources_data))])
             ItemSource.objects.bulk_create(item_sources)
         return wish_item
 
@@ -146,6 +150,7 @@ class WishListItemDetailSerializer(ModelSerializer):
         current_sources = dict((i.id, i) for i in instance.sources.all())
         prev_is_completed = instance.completed_at is not None
         new_is_completed = validated_data.pop('is_completed', None)
+        validated_data.pop('upload_image')
 
         if prev_is_completed and not new_is_completed:
             instance.completed_at = None
@@ -191,7 +196,7 @@ class WishListItemDetailSerializer(ModelSerializer):
     class Meta:
         model = WishItem
         fields = ['uuid', 'title', 'description', 'is_public', 'is_completed', 'completed_at',
-                  'is_starred', 'created_at', 'updated_at', 'sources', 'image']
+                  'is_starred', 'created_at', 'updated_at', 'sources', 'image', 'upload_image']
         read_only_fields = [
             'uuid', 'created_at', 'updated_at', 'image'
         ]
