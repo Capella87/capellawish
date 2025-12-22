@@ -20,12 +20,18 @@ from wishlist.models import WishItem, ItemSource, BlobImage
 
 logger = get_task_logger(__name__)
 
+SCRAPE_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br, zstd',
+}
+
 
 @app.task(bind=True, track_started=True)
 def retrieve_data_from_url(self, url: str, id: int, skip_image: bool) -> None:
     retrieved = retrieve_data(url)
     if not retrieved:
-        raise ValueError('Failed to retrieve data from url')
+        raise ValueError('Failed to retrieve data from url. Halt fetching.')
 
     if not retrieved.get('image', None) or skip_image:
         # Call the save task directly
@@ -140,15 +146,16 @@ def fetch_page_from_url(url: str,
     """Fetches a web page from the given URL with specified headers and timeout."""
     if not headers:
         headers = {}
-    if headers.get('user-agent') is None:
+    if headers.get('User-Agent') is None:
         logger.warning('No proper user agent provided. Setting a common one to avoid blocking.')
-        user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0'
+        user_agent = SCRAPE_HEADERS['User-Agent']
         logger.info('Using user agent: %s', user_agent)
-        headers.update({'user-agent': user_agent})
+        headers.update({'User-Agent': user_agent})
     try:
         # Retrieving the data from the URL
         logger.debug(f'Try fetching page from URL {url}')
-        page_response = requests.get(url, headers=headers, timeout=timeout)
+        session = requests.Session()
+        page_response = session.get(url, headers=headers, timeout=timeout)
         page_response.raise_for_status()
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
         logger.exception('Could not retrieve page from %s: %s', url, e)
@@ -169,11 +176,12 @@ def retrieve_data(url: str) -> dict | None:
     Optional:
     description, price (metadata)
     """
-    fetched_page = fetch_page_from_url(url, headers={'user-agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0'},
+    fetched_page = fetch_page_from_url(url, headers=SCRAPE_HEADERS,
                                        timeout=10)
-    soup = create_soup(fetched_page, 'lxml')
-
+    if not fetched_page or fetched_page.status_code != 200:
+        return None
     try:
+        soup = create_soup(fetched_page, 'lxml')
         data = {}
         # Try to extract OpenGraph properties
         og_props = parse_opengraph_properties(soup)
@@ -181,7 +189,7 @@ def retrieve_data(url: str) -> dict | None:
         if not og_props:
             logger.info(f'No OpenGraph properties found in the page: {url}')
     except Exception as e:
-        logger.exception('Unexpected error while parsing the page: %s', e)
+        logger.exception(f'Unexpected error while parsing the page: %s', e)
         return None
 
     if len(og_props) > 0:
@@ -209,7 +217,7 @@ def guess_filename(url: str, response: requests.Response) -> str:
     return rt
 
 def fetch_image(url: str) -> Path | None:
-    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0'})
+    response = requests.get(url, headers=SCRAPE_HEADERS)
     response.raise_for_status()
     filename = guess_filename(url, response)
     final_basepath = Path(__file__).parent.parent / 'data' / 'temp'
