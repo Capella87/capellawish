@@ -12,10 +12,8 @@ class ListModel(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, auto_created=True)
     title = models.CharField(max_length=200, blank=False)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to="lists",
-                              blank=True,
-                              null=True)
-
+    image = models.ForeignKey('wishlist.BlobImage', related_name='list_image',
+                              on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -310,7 +310,7 @@ REST_AUTH = {
 
     'JWT_AUTH_COOKIE': 'jwt_accesstoken',
     'JWT_AUTH_REFRESH_COOKIE': 'jwt_refreshtoken',
-    'JWT_AUTH_REFRESH_COOKIE_PATH': '/',
+    'JWT_AUTH_REFRESH_COOKIE_PATH': '/api/auth/token/',
     'JWT_AUTH_SECURE': True,
     'JWT_AUTH_HTTPONLY': True,
     'JWT_AUTH_SAMESITE': 'Lax',
@@ -493,4 +493,17 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
+}
+
+
+# Celery Settings
+
+CELERY_BROKER_URL = SECRETS.get('CELERY_BROKER_URL', os.getenv('CELERY_BROKER_URL', ''))
+CELERY_RESULT_BACKEND = SECRETS.get('CELERY_RESULT_BACKEND', os.getenv('CELERY_RESULT_BACKEND', ''))
+
+
+# Post Office Settings
+
+POST_OFFICE = {
+    'CELERY_ENABLED': True,
 }
