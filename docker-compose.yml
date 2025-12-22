@@ -13,7 +13,9 @@ services:
     ports:
       - '5432:5432'
   web:
-    build: .
+    build:
+      context: .
+    image: capellawish/app
     command: sh -c 'uv run --no-dev manage.py collectstatic --noinput && uv run --no-dev manage.py migrate && hypercorn capellawish.asgi:application --config ./hypercornconfig.toml'
     volumes:
       # - .:/app # Uncomment for local development
@@ -59,6 +61,18 @@ services:
     volumes:
       - redis_data:/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf
+  celeryworker:
+    image: capellawish/app
+    restart: always
+    command: sh -c "celery -A capellawish worker -l info --concurrency=2"
+    volumes:
+      - weblog:/app/logs
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+      - db
 volumes:
   postgres_data:
   webstatic:
