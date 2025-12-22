@@ -310,7 +310,7 @@ REST_AUTH = {
 
     'JWT_AUTH_COOKIE': 'jwt_accesstoken',
     'JWT_AUTH_REFRESH_COOKIE': 'jwt_refreshtoken',
-    'JWT_AUTH_REFRESH_COOKIE_PATH': '/',
+    'JWT_AUTH_REFRESH_COOKIE_PATH': '/api/auth/token/',
     'JWT_AUTH_SECURE': True,
     'JWT_AUTH_HTTPONLY': True,
     'JWT_AUTH_SAMESITE': 'Lax',
