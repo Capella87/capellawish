@@ -73,6 +73,19 @@ services:
       - web
       - redis
       - db
+  flower:
+    image: mher/flower:latest
+    restart: always
+    command: sh -c "celery flower -A capellawish --port=5555"
+    env_file:
+      - .env
+    ports:
+      - '5950:5555'
+    depends_on:
+      - web
+      - redis
+      - db
+      - celeryworker
 volumes:
   postgres_data:
   webstatic:
