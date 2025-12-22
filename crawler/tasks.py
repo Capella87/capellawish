@@ -89,6 +89,7 @@ def save_data(self, data: dict, id: int) -> None:
                             blob.image.save(filename, django_file)
                             blob.sha256_hash = hash
                             blob.save()
+                            target.image = blob
             target.save()
     except (WishItem.DoesNotExist, ItemSource.DoesNotExist) as exc:
         logger.info(f'WishItem or ItemSource does not exist: {exc}')
