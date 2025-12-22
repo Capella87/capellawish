@@ -223,7 +223,7 @@ def fetch_image(url: str) -> Path | None:
     final_basepath = Path(__file__).parent.parent / 'data' / 'temp'
 
     if not Path.exists(final_basepath):
-        Path.mkdir(final_basepath)
+        Path.mkdir(final_basepath, parents=True)
     final_path = final_basepath / filename
 
     with open(final_path, 'wb') as f:
