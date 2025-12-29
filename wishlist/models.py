@@ -1,5 +1,4 @@
 import uuid
-from typing import override
 
 from django.core import validators
 from django.db import models
@@ -16,7 +15,8 @@ class WishItem(models.Model):
     description = models.TextField(blank=True)
 
     # Image field (optional)
-    image = models.ImageField(upload_to='items/', blank=True, null=True)
+    image = models.ForeignKey('wishlist.BlobImage', related_name='wish_item_image',
+                              on_delete=models.SET_NULL, null=True, blank=True)
 
     # Status fields
     is_public = models.BooleanField(default=False)
@@ -52,12 +52,26 @@ class ItemSource(models.Model):
     source_name = models.CharField(max_length=300, blank=True)
     wish_item = models.ForeignKey(WishItem, related_name='sources', on_delete=models.CASCADE)
     description = models.TextField(blank=True)
+    is_primary = models.BooleanField(default=False)
 
     class Meta:
         indexes = [
-            models.Index(fields=['wish_item', 'source_url'], name='idx_item_source_item_url'),
+            models.Index(fields=['wish_item', 'source_url', 'is_primary'], name='idx_item_source_item_url'),
             models.Index(fields=['uuid'], name='idx_item_source_uuid'),
         ]
         constraints = [
             models.UniqueConstraint(fields=['source_url', 'wish_item'], name='unique_source_per_item')
+        ]
+
+
+class BlobImage(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
+    sha256_hash = models.CharField(max_length=120, unique=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['sha256_hash'], name='idx_blobimage_sha256hash'),
+            models.Index(fields=['uploaded_at'], name='idx_blobimage_uploaded_at'),
         ]

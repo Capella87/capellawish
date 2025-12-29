@@ -39,7 +39,7 @@ class DjangoPostOfficeAccountAdapter(DefaultAccountAdapter):
                   subject=message.subject,
                   message=message.body,
                   headers=message.extra_headers,
-                  priority='now',
+                  priority='high',
                   render_on_delivery=False)
 
     @override

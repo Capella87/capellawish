@@ -182,3 +182,5 @@ static
 logs
 .pgpass
 .idea
+data
+certs
