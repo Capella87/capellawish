@@ -26,7 +26,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView, TokenVerifyView
 )
 
-from capellawish.views import MainView, AuthenticatedMainView
+from capellawish.views import MainView, AuthenticatedMainView, TeapotView, KonamiCodeView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='api/', permanent=False)),
@@ -35,6 +35,8 @@ urlpatterns = [
     path('api/', MainView.as_view(), name='main'),
     path('api/item/', include('wishlist.urls'), name='wishlist'),
     path('api/list/', include('list.urls'), name='list'),
+    path('api/teapot/', TeapotView.as_view(), name='teapot'),
+    path('api/konami/', KonamiCodeView.as_view(), name='konami'),
 
     path('api/authenticated/', AuthenticatedMainView.as_view(), name='authenticated'),
 
