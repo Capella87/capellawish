@@ -20,6 +20,8 @@ from wishlist.serializers import WishListItemSerializer, WishListItemDetailSeria
 from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer, BlobImageUploadSerializer
 from crawler.tasks import retrieve_data_from_url
 
+from django.conf import settings
+
 # Create your views here.
 
 logger = logging.getLogger(__name__)
@@ -92,9 +94,10 @@ class WishListView(GenericAPIView):
 
         ## TODO: Filter duplicate titles for the same user.
         primary_source = ItemSource.objects.filter(is_primary=True).get(wish_item=res.pk)
-        retrieve_data_from_url.apply_async(args=(primary_source.source_url,
-                                                 res.pk,
-                                                 True if has_image_upload else False))
+        if settings.USE_METADATA_CRAWLER:
+            retrieve_data_from_url.apply_async(args=(primary_source.source_url,
+                                                    res.pk,
+                                                    True if has_image_upload else False))
 
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
