@@ -141,10 +141,10 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 MIDDLEWARE = [
-    'silk.middleware.SilkyMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'silk.middleware.SilkyMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -343,7 +343,8 @@ CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
-    'https://localhost:8081'
+    'https://localhost:8081',
+    'http://localhost:5173',
 ]
 
 SESSION_COOKIE_SECURE = True
@@ -362,7 +363,28 @@ USE_I18N = True
 USE_TZ = True
 
 # CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+
+CORS_ALLOWED_ORIGINS = [
+    'https://localhost:8081',
+    'http://localhost:8000',
+    'http://localhost:5173'
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'referrer-policy',
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 
 # Static files (CSS, JavaScript, Images)
