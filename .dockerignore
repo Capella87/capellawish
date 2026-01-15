@@ -9,3 +9,6 @@ tests/
 secrets.json
 data/
 media/
+.git/
+.vscode/
+.idea/
