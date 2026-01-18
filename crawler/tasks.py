@@ -42,9 +42,12 @@ def retrieve_data_from_url(self, url: str, id: int, skip_image: bool) -> None:
         else:
             image = retrieved['image']
 
-        chain(retrieve_image_from_url.s(image, retrieved),
-              save_data.s(id)
-              ).apply_async()
+        # Find existing image from the database
+        entity = BlobImage.objects.filter(url=image).first()
+        if not entity:
+            chain(retrieve_image_from_url.s(image, retrieved, url),
+                 save_data.s(id)
+                 ).apply_async()
     return
 
 @app.task(bind=True, track_started=True)
@@ -64,7 +67,7 @@ def retrieve_image_from_url(self, url: str, data: dict) -> dict:
     return data
 
 @app.task(bind=True, track_started=True)
-def save_data(self, data: dict, id: int) -> None:
+def save_data(self, data: dict, id: int, url: str) -> None:
     try:
         with transaction.atomic():
             target = WishItem.objects.select_for_update().get(id=id)
@@ -72,6 +75,7 @@ def save_data(self, data: dict, id: int) -> None:
                 target.title = data['title']
             if not target.description:
                 target.description = data['description']
+
             image_path = data.get('image', None)
             if not target.image and image_path:
                 if isinstance(image_path, (str, Path)) and Path(image_path).exists():
@@ -88,6 +92,7 @@ def save_data(self, data: dict, id: int) -> None:
                             blob = BlobImage()
                             blob.image.save(filename, django_file)
                             blob.sha256_hash = hash
+                            blob.url = url
                             blob.save()
                             target.image = blob
             target.save()

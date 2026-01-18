@@ -15,9 +15,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from wishlist.models import WishItem, BlobImage, ItemSource
 from wishlist.pagination import WishItemListPagination
-from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer, WishListItemImageSerializer, \
-    WishListItemPatchSerializer
-from wishlist.serializers import WishListItemSerializer, WishListItemDetailSerializer, BlobImageUploadSerializer
+from wishlist.serializers import (WishListItemSerializer, WishListItemDetailSerializer,
+                                  BlobImageUploadSerializer, WishListItemPatchSerializer)
 from crawler.tasks import retrieve_data_from_url
 
 from django.conf import settings
