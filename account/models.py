@@ -70,7 +70,7 @@ class WishListUser(AbstractUser):
                                       upload_to='users/profile/',
                                       blank=True, null=True)
     bio = models.TextField(_('bio'), blank=True, editable=True)
-    # birthday = models.DateField(_('date of birth'), blank=True, editable=True) # Optional
+    birthday = models.DateField(_('date of birth'), null=True, blank=True, editable=True) # Optional
 
     ## TODO: Passkey and 2FA
 

@@ -63,7 +63,7 @@ class UserSignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = WishListUser
         fields = ['email', 'username', 'first_name', 'last_name',
-                  'alias_name', 'middle_name', 'password', 'password2']
+                  'alias_name', 'middle_name', 'password', 'password2', 'birthday']
 
 
 class UserAccountSerializer(serializers.ModelSerializer):
@@ -81,7 +81,8 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WishListUser
-        fields = ['email', 'username', 'first_name', 'last_name', 'alias_name', 'middle_name', 'is_staff', 'is_superuser', 'bio', 'profile_image']
+        fields = ['email', 'username', 'first_name', 'last_name', 'alias_name', 'middle_name',
+                  'is_staff', 'is_superuser', 'bio', 'profile_image', 'birthday']
         read_only_fields = ['email', 'username', 'is_staff', 'is_superuser', 'profile_image']
 
 
