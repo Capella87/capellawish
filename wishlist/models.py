@@ -69,9 +69,11 @@ class BlobImage(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
     sha256_hash = models.CharField(max_length=120, unique=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    url = models.TextField(blank=False, validators=[validators.URLValidator()], null=True)
 
     class Meta:
         indexes = [
             models.Index(fields=['sha256_hash'], name='idx_blobimage_sha256hash'),
             models.Index(fields=['uploaded_at'], name='idx_blobimage_uploaded_at'),
+            models.Index(fields=['url'], name='idx_blobimage_url'),
         ]
