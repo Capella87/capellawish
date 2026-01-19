@@ -345,6 +345,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'https://localhost:8081',
     'http://localhost:5173',
+    'https://localhost:5173'
 ]
 
 SESSION_COOKIE_SECURE = True
@@ -368,7 +369,8 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     'https://localhost:8081',
     'http://localhost:8000',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'https://localhost:5173'
 ]
 
 CORS_ALLOW_HEADERS = [
