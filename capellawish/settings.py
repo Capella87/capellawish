@@ -504,6 +504,10 @@ ACCOUNT_RATE_LIMITS = {
     'confirm_email': '10/2m/key'
 }
 
+# Source: https://github.com/django/django/blob/59fcd2a1990775d9e893a44a45222d8a54112570/django/http/request.py#L207
+# https://stackoverflow.com/questions/13782979/django-social-auth-redirect-uri-invalid
+USE_X_FORWARDED_HOST = True
+
 # Only for sending emails
 ACCOUNT_SIGNUP_FIELDS = ['username', 'email*', 'password1', 'password2']
 
