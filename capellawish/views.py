@@ -34,9 +34,6 @@ class MainView(GenericAPIView):
             data.update({'user_agent': request.META['HTTP_USER_AGENT']})
             ret = Response(data=data,
                             status=rest_framework.status.HTTP_200_OK)
-            ret.set_cookie(key='sample_cookie', value=f'{data["title"]}: {data["description"]}',
-                           httponly=False, samesite='Lax', path='/', secure=False,
-                           max_age=172_800) # 2 days
             return ret
 
         # Return error message with Problem Details format
