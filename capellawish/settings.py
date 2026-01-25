@@ -451,7 +451,7 @@ EMAIL_REQUIRED = False
 
 # AllAuth Settings
 
-ACCOUNT_ADAPTER = 'account.email.DjangoPostOfficeAccountAdapter'
+ACCOUNT_ADAPTER = 'account.adapter.WishAccountAdapter'
 
 # You must allow this option
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True

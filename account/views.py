@@ -143,7 +143,8 @@ class SendEmailConfirmationView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        email_entry = get_or_sync_user_email(request.user, serializer.validated_data['email'])
+        from .adapter import get_adapter
+        email_entry = get_adapter().get_or_sync_user_email(request.user, serializer.validated_data['email'])
         if email_entry.verified:
             return Response(data={'message': 'Your email is already verified.',
                                   'email': email_entry.email}, status=status.HTTP_200_OK)

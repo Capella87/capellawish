@@ -1,9 +1,10 @@
 from typing import override
 
+from allauth.account import app_settings
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.models import EmailConfirmationHMAC, EmailConfirmationMixin, EmailAddress
 from allauth.core.internal.httpkit import get_frontend_url
-from allauth.utils import build_absolute_uri
+from allauth.utils import build_absolute_uri, import_attribute
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.sites.shortcuts import get_current_site
@@ -13,9 +14,9 @@ from post_office import mail
 from rest_framework.request import Request
 
 
-class DjangoPostOfficeAccountAdapter(DefaultAccountAdapter):
+class WishAccountAdapter(DefaultAccountAdapter):
     """
-    Custom account adapter that uses django-post-office to send emails asynchronously.
+    Custom account adapter, based on the default one, uses django-post-office to send emails asynchronously.
     """
 
     def get_support_email(self) -> str:
@@ -32,8 +33,6 @@ class DjangoPostOfficeAccountAdapter(DefaultAccountAdapter):
         ctx.update(context)
         message = self.render_mail(template_prefix, email, ctx)
 
-        # TODO: Set priority to 'high' after configuring Celery.
-        # Currently sending email immediately is too slow for user experience. (~4-5 seconds per request)
         mail.send(sender=message.from_email,
                   recipients=message.to,
                   subject=message.subject,
@@ -51,15 +50,18 @@ class DjangoPostOfficeAccountAdapter(DefaultAccountAdapter):
             url = build_absolute_uri(request, url)
         return url
 
+    def get_or_sync_user_email(self, user: AbstractBaseUser, email: str) -> EmailAddress:
+        email_queryset = EmailAddress.objects.filter(user_id=user.pk, email=email)
+        if not email_queryset.exists():
+            email_entry, _ = EmailAddress.objects.get_or_create(user_id=user.pk, email=email, defaults={
+                'verified': False,
+                'primary': False,
+            })
+        else:
+            email_entry = email_queryset.first()
 
-def get_or_sync_user_email(user: AbstractBaseUser, email: str) -> EmailAddress:
-    email_queryset = EmailAddress.objects.filter(user_id=user.pk, email=email)
-    if not email_queryset.exists():
-        email_entry, _ = EmailAddress.objects.get_or_create(user_id=user.pk, email=email, defaults={
-            'verified': False,
-            'primary': False,
-        })
-    else:
-        email_entry = email_queryset.first()
+        return email_entry
 
-    return email_entry
+
+def get_adapter(request=None) -> WishAccountAdapter:
+    return import_attribute(app_settings.ADAPTER)(request)
