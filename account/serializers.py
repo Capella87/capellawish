@@ -3,13 +3,16 @@ from typing import override
 
 from allauth.account.internal.flows.email_verification import send_verification_email_for_user
 from allauth.account.utils import setup_user_email, has_verified_email
+from dj_rest_auth.serializers import PasswordResetSerializer, PasswordResetConfirmSerializer
+from django.conf import settings
 from django.contrib.auth import password_validation
+from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.models import AbstractUser
 from rest_framework import serializers
 from allauth.account import app_settings as allauth_settings
 
 from account.models import WishListUser
-
+from account.utils import password_reset_url_generator
 
 logger = logging.getLogger(__name__)
 
@@ -142,3 +145,29 @@ class EmailConfirmationSerializer(serializers.Serializer):
 
 class ResendEmailConfirmationSerializer(serializers.Serializer):
     email = serializers.EmailField(required=allauth_settings.SIGNUP_FIELDS['email']['required'])
+
+
+class ResetPasswordSerializer(PasswordResetSerializer):
+    @override
+    def save(self):
+        if 'allauth' in settings.INSTALLED_APPS:
+            from allauth.account.forms import default_token_generator
+        else:
+            from django.contrib.auth.tokens import default_token_generator
+        request = self.context.get('request', None)
+        opts = {
+            'use_https': request.is_secure(),
+            'from_email': getattr(settings, 'DEFAULT_FROM_EMAIL'),
+            'request': request,
+            'token_generator': default_token_generator,
+            'url_generator': password_reset_url_generator
+        }
+        opts.update(self.get_email_options())
+        self.reset_form.save(**opts)
+
+
+class ResetPasswordConfirmSerializer(PasswordResetConfirmSerializer):
+    new_password1 = serializers.CharField(max_length=200, required=True, allow_blank=False, write_only=True)
+    new_password2 = serializers.CharField(max_length=200, required=True, allow_blank=False, write_only=True)
+
+    set_password_from_class = SetPasswordForm

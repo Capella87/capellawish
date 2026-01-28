@@ -294,8 +294,8 @@ REST_AUTH = {
     'JWT_SERIALIZER': 'account.serializers.JWTTokenSerializer',
     'JWT_SERIALIZER_WITH_EXPIRATION': 'account.serializers.JWTTokenWithExpirationSerializer',
     'JWT_TOKEN_CLAIMS_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
-    'PASSWORD_RESET_SERIALIZER': 'dj_rest_auth.serializers.PasswordResetSerializer',
-    'PASSWORD_RESET_CONFIRM_SERIALIZER': 'dj_rest_auth.serializers.PasswordResetConfirmSerializer',
+    'PASSWORD_RESET_SERIALIZER': 'account.serializers.ResetPasswordSerializer',
+    'PASSWORD_RESET_CONFIRM_SERIALIZER': 'account.serializers.ResetPasswordConfirmSerializer',
 
     'REGISTER_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
 

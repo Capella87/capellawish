@@ -2,7 +2,9 @@ from typing import override
 from urllib.parse import unquote
 
 from allauth.account.models import EmailAddress
-from allauth.account.views import ConfirmEmailView
+from allauth.account.views import sensitive_post_parameters_m, ConfirmEmailView
+from django.utils.translation import gettext_lazy as _
+from dj_rest_auth.app_settings import api_settings
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -11,10 +13,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from allauth.account import app_settings as allauth_settings
 
-from account.email import get_or_sync_user_email
 from account.models import WishListUser
 from account.serializers import UserSignUpSerializer, UserPasswordChangeSerializer, UserAccountSerializer, \
-    EmailConfirmationSerializer, ResendEmailConfirmationSerializer
+    EmailConfirmationSerializer, ResendEmailConfirmationSerializer, ResetPasswordSerializer
 
 
 # Create your views here.
@@ -152,3 +153,41 @@ class SendEmailConfirmationView(GenericAPIView):
 
         return Response(data={'message': 'Confirmation email sent. Please check your inbox.'},
                         status=status.HTTP_200_OK)
+
+
+# TODO: Re-add email confirmation serializer settings and make its related viewş refer settings instead.
+class ResetPasswordView(GenericAPIView):
+    serializer_class = api_settings.PASSWORD_RESET_SERIALIZER
+    permission_classes = [AllowAny]
+    # TODO: Apply dj-rest-auth throttle classes to other account related views
+    throttle_scope = 'dj_rest_auth'
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        # TODO: Update other views to use translations
+        return Response({
+                'message': _('Password reset email has been sent.')},
+            status=status.HTTP_200_OK)
+
+class ResetPasswordConfirmView(GenericAPIView):
+    serializer_class = api_settings.PASSWORD_RESET_CONFIRM_SERIALIZER
+    permission_classes = [AllowAny]
+    throttle_scope = 'dj_rest_auth'
+
+    @sensitive_post_parameters_m
+    def dispatch(self, request: Request, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {'message': _('Password has been reset with the new password.')},
+            status=status.HTTP_200_OK
+        )
