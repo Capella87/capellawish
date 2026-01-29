@@ -27,10 +27,10 @@ class UserAccountSignUpView(GenericAPIView):
     def create_response(self) -> Response:
         if allauth_settings.EMAIL_VERIFICATION == allauth_settings.EmailVerificationMethod.MANDATORY:
             return Response(data={
-                'message': 'Confirmation email sent. Please check your inbox.'
-            }, status=status.HTTP_201_CREATED)
+                'message': _('Confirmation email sent. Please check your inbox.')},
+                status=status.HTTP_201_CREATED)
         else:
-            return Response(data={'message': 'Successfully registered.'},
+            return Response(data={'message': _('Successfully registered.')},
                             status=status.HTTP_201_CREATED)
 
     def post(self, request: Request) -> Response:
@@ -66,7 +66,7 @@ class UserAccountView(GenericAPIView):
         user.is_active = False
         user.save()
 
-        return Response(data={'message': 'Account successfully deleted. Goodbye!'}, status=status.HTTP_200_OK)
+        return Response(data={'message': _('Account successfully deleted. Goodbye!')}, status=status.HTTP_200_OK)
 
 
 class UserPasswordView(GenericAPIView):
@@ -80,7 +80,7 @@ class UserPasswordView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.update(user, request.data)
 
-        return Response(data={'message': 'Password successfully changed.'}, status=status.HTTP_200_OK)
+        return Response(data={'message': _('Password successfully changed.')}, status=status.HTTP_200_OK)
 
 
 # Source: https://github.com/iMerica/dj-rest-auth/blame/master/dj_rest_auth/registration/views.py
@@ -97,7 +97,7 @@ class EmailConfirmationView(APIView, ConfirmEmailView):
         confirmation = self.get_object()
         result = confirmation.confirm(request)
 
-        return Response(data={'message': 'Email is successfully verified.',
+        return Response(data={'message': _('Email is successfully verified.'),
                               'email': result.email},
                         status=status.HTTP_200_OK)
 
@@ -112,7 +112,7 @@ class EmailConfirmationView(APIView, ConfirmEmailView):
         confirmation = self.get_object()
         result = confirmation.confirm(self.request)
 
-        return Response(data={'message': 'Email is successfully verified.',
+        return Response(data={'message': _('Email is successfully verified.'),
                               'email': result.email},
                         status=status.HTTP_200_OK)
 
@@ -130,7 +130,7 @@ class ResendEmailConfirmationView(GenericAPIView):
         if email_target and not email_target.verified:
             email_target.send_confirmation(request=request)
 
-        return Response(data={'message': 'Confirmation email resent. Please check your inbox.'},
+        return Response(data={'message': _('Confirmation email resent. Please check your inbox.')},
                         status=status.HTTP_200_OK)
 
 
@@ -147,11 +147,11 @@ class SendEmailConfirmationView(GenericAPIView):
         from .adapter import get_adapter
         email_entry = get_adapter().get_or_sync_user_email(request.user, serializer.validated_data['email'])
         if email_entry.verified:
-            return Response(data={'message': 'Your email is already verified.',
+            return Response(data={'message': _('Your email is already verified.'),
                                   'email': email_entry.email}, status=status.HTTP_200_OK)
         _ = email_entry.send_confirmation(request=request, signup=False)
 
-        return Response(data={'message': 'Confirmation email sent. Please check your inbox.'},
+        return Response(data={'message': _('Confirmation email sent. Please check your inbox.')},
                         status=status.HTTP_200_OK)
 
 
