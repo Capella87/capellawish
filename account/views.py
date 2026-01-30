@@ -14,14 +14,13 @@ from rest_framework.views import APIView
 from allauth.account import app_settings as allauth_settings
 
 from account.models import WishListUser
-from account.serializers import UserSignUpSerializer, UserPasswordChangeSerializer, UserAccountSerializer, \
-    EmailConfirmationSerializer, ResendEmailConfirmationSerializer, ResetPasswordSerializer
+from account.serializers import EmailConfirmationSerializer, ResendEmailConfirmationSerializer
 
 
 # Create your views here.
 
 class UserAccountSignUpView(GenericAPIView):
-    serializer_class = UserSignUpSerializer
+    serializer_class = api_settings.REGISTER_SERIALIZER
     permission_classes = [AllowAny]
 
     def create_response(self) -> Response:
@@ -43,7 +42,7 @@ class UserAccountSignUpView(GenericAPIView):
 
 class UserAccountView(GenericAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = UserAccountSerializer
+    serializer_class = api_settings.USER_DETAILS_SERIALIZER
 
     def get(self, request: Request) -> Response:
         user = request.user
@@ -71,7 +70,8 @@ class UserAccountView(GenericAPIView):
 
 class UserPasswordView(GenericAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = UserPasswordChangeSerializer
+    serializer_class = api_settings.PASSWORD_CHANGE_SERIALIZER
+    throttle_classes = 'dj_rest_auth'
 
     def put(self, request: Request) -> Response:
         user = request.user
@@ -155,11 +155,9 @@ class SendEmailConfirmationView(GenericAPIView):
                         status=status.HTTP_200_OK)
 
 
-# TODO: Re-add email confirmation serializer settings and make its related viewş refer settings instead.
 class ResetPasswordView(GenericAPIView):
     serializer_class = api_settings.PASSWORD_RESET_SERIALIZER
     permission_classes = [AllowAny]
-    # TODO: Apply dj-rest-auth throttle classes to other account related views
     throttle_scope = 'dj_rest_auth'
 
     def post(self, request: Request, *args, **kwargs) -> Response:
@@ -168,7 +166,6 @@ class ResetPasswordView(GenericAPIView):
 
         serializer.save()
 
-        # TODO: Update other views to use translations
         return Response({
                 'message': _('Password reset email has been sent.')},
             status=status.HTTP_200_OK)

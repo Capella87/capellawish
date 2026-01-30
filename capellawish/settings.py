@@ -294,9 +294,11 @@ REST_AUTH = {
     'JWT_SERIALIZER': 'account.serializers.JWTTokenSerializer',
     'JWT_SERIALIZER_WITH_EXPIRATION': 'account.serializers.JWTTokenWithExpirationSerializer',
     'JWT_TOKEN_CLAIMS_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
+    'USER_DETAILS_SERIALIZER': 'account.serializers.UserAccountSerializer',
+    'PASSWORD_CHANGE_SERIALIZER': 'account.serializers.UserPasswordChangeSerializer',
     'PASSWORD_RESET_SERIALIZER': 'account.serializers.ResetPasswordSerializer',
     'PASSWORD_RESET_CONFIRM_SERIALIZER': 'account.serializers.ResetPasswordConfirmSerializer',
-
+    'REGISTER_SERIALIZER': 'account.serializers.UserSignUpSerializer',
     'REGISTER_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
 
     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
