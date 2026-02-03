@@ -42,6 +42,9 @@ class WishListView(GenericAPIView):
                 .filter(user_id=self.request.user.pk)
                 .only(*self.get_serializer_class().Meta.fields))
 
+    def _parse_str_to_bool(self, value: str) -> bool:
+        return value.lower() == 'true'
+
     def get(self, request: Request, *args, **kwargs) -> Response:
         '''
         Retrieve the list of wishlist items for the authenticated user.
@@ -56,15 +59,15 @@ class WishListView(GenericAPIView):
 
         starred = request.query_params.get('starred', None)
         if starred:
-            qs = qs.filter(is_starred=True)
+            qs = qs.filter(is_starred=self._parse_str_to_bool(starred))
 
         completed = request.query_params.get('completed', None)
-        if completed is not None:
-            qs = qs.filter(completed_at__isnull=False)
+        if completed:
+            qs = qs.filter(completed_at__isnull=not self._parse_str_to_bool(completed))
 
         public_posts = request.query_params.get('public', None)
         if public_posts is not None:
-            qs = qs.filter(is_public=True)
+            qs = qs.filter(is_public=self._parse_str_to_bool(public_posts))
 
         paginated = self.paginate_queryset(queryset=qs)
         serialized = self.get_serializer(instance=paginated, many=True)
