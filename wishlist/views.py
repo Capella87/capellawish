@@ -40,7 +40,7 @@ class WishListView(GenericAPIView):
         return (WishItem.objects
                 .filter(deleted_at__isnull=True)
                 .filter(user_id=self.request.user.pk)
-                .only(*self.get_serializer_class().Meta.fields))
+                .only(*['uuid', 'title', 'completed_at', 'is_starred', 'updated_at', 'image']))
 
     def _parse_str_to_bool(self, value: str) -> bool:
         return value.lower() == 'true'

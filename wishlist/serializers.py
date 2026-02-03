@@ -62,15 +62,22 @@ class SourceItemSerializer(ModelSerializer):
 class WishListItemSerializer(ModelSerializer):
     uuid = UUIDField(default=uuid.uuid4)
     image = SerializerMethodField(read_only=True)
+    primary_source_url = SerializerMethodField(read_only=True)
+
+    def get_primary_source_url(self, obj) -> str | None:
+        target = ItemSource.objects.filter(wish_item=obj, is_primary=True).first()
+        if not target:
+            return None
+        return target.source_url
 
     def get_image(self, obj: BlobImage) -> str | None:
         return None if obj.image is None else self.context.get('request').build_absolute_uri(obj.image.image.url)
 
     class Meta:
         model = WishItem
-        fields = ['uuid', 'title', 'completed_at', 'is_starred', 'updated_at', 'image']
+        fields = ['uuid', 'title', 'completed_at', 'is_starred', 'updated_at', 'image', 'primary_source_url']
         read_only_fields = [
-            'uuid', 'updated_at', 'image'
+            'uuid', 'updated_at', 'image', 'primary_source_url'
         ]
 
 
