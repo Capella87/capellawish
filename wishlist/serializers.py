@@ -52,10 +52,11 @@ class BlobImageUploadSerializer(ModelSerializer):
 
 class SourceItemSerializer(ModelSerializer):
     uuid = UUIDField(default=uuid.uuid4, read_only=False) # Will be a trouble if I set read_only to True?
+    is_primary = serializers.BooleanField(required=False, read_only=True)
 
     class Meta:
         model = ItemSource
-        fields = ['uuid', 'source_url', 'source_name', 'description']
+        fields = ['uuid', 'source_url', 'source_name', 'description', 'is_primary']
 
 
 class WishListItemSerializer(ModelSerializer):

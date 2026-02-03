@@ -92,8 +92,10 @@ class WishListView(GenericAPIView):
         res: WishItem = serializer.save(user=request.user)
 
         ## TODO: Filter duplicate titles for the same user.
-        primary_source = ItemSource.objects.filter(is_primary=True).get(wish_item=res.pk)
-        if settings.USE_METADATA_CRAWLER:
+        sources = ItemSource.objects.filter(wish_item=res).order_by('pk')
+        primary_source = sources.filter(is_primary=True).first()
+
+        if primary_source and settings.USE_METADATA_CRAWLER:
             retrieve_data_from_url.apply_async(args=(primary_source.source_url,
                                                     res.pk,
                                                     True if has_image_upload else False))
