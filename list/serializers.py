@@ -14,8 +14,9 @@ class ListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ListModel
-        fields = ['uuid', 'title', 'description', 'image', 'updated_at', 'item_count']
+        fields = ['uuid', 'title', 'description', 'image', 'updated_at', 'item_count', 'upload_image']
         read_only_fields = ['uuid', 'updated_at', 'item_count', 'image']
+        write_only_fields = ['upload_image']
 
     def get_item_count(self, obj):
         return obj.items.count()
